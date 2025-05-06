@@ -88,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   Center(
                       child: Image.asset(
                         'assets/images/kalla_toyota_logo.png',
-                        height: 55,
+                        height: 45,
                       ),
                     ),
                   const SizedBox(height: 20),

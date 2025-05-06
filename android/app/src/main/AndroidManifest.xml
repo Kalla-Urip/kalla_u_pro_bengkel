@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="kalla_u_pro_bengkel"
+        android:label="U-Pro Bengkel"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

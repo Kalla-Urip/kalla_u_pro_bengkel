@@ -6,7 +6,7 @@ class AppTheme {
   static final ThemeData lightTheme = ThemeData(
     primaryColor: AppColors.primary,
     scaffoldBackgroundColor: Colors.white,
-    fontFamily: 'Poppins',
+    fontFamily: 'GeneralSans',
     textTheme: const TextTheme(
       displayLarge: AppTextStyles.headline1,
       displayMedium: AppTextStyles.headline2,
