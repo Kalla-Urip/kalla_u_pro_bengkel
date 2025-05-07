@@ -3,6 +3,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
+import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/progress_card_widget.dart';
 import 'package:kalla_u_pro_bengkel/util/utils.dart';
@@ -64,7 +65,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                   children: [
                     // Logo
                     Image.asset(
-                      'assets/images/kalla_toyota_logo_white.png',
+                      ImageResources.kallaToyotaLogoWhitepng,
                       height: 30,
                     ),
                     // User profile icon
@@ -77,7 +78,7 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
                           shape: BoxShape.circle,
                         ),
                         child:  SvgPicture.asset(
-                          "assets/icons/ic_profile.svg",
+                          ImageResources.icProfile,
                         ),
                       ),
                     ),

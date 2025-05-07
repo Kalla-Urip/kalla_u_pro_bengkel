@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
+import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 
 
@@ -87,7 +88,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   // Logo
                   Center(
                       child: Image.asset(
-                        'assets/images/kalla_toyota_logo.png',
+                        ImageResources.kallaToyotaLogopng,
                         height: 45,
                       ),
                     ),

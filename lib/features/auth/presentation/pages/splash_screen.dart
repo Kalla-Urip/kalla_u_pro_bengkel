@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
+import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 class SplashScreen extends StatefulWidget {
@@ -47,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             // Logo
             SvgPicture.asset(
-              'assets/images/kalla_toyota_logo.svg',
+              ImageResources.kallaToyotaLogopng,
               width: 200,
               height: 100,
             ),

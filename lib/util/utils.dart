@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
+import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 
 class Utils {
     static FloatingActionButton buildFloatingActionButton({
@@ -10,7 +11,7 @@ class Utils {
     return FloatingActionButton.extended(
       onPressed: onPressed,
       icon: SvgPicture.asset(
-        'assets/icons/ic_add.svg',
+        ImageResources.icAdd,
         width: 32,
         height: 32,
       ),
