@@ -5,6 +5,7 @@ import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/progress_card_widget.dart';
+import 'package:kalla_u_pro_bengkel/util/utils.dart';
 
 
 class MainScreen extends StatefulWidget {
@@ -131,14 +132,16 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           Container(
             color: Colors.white,
             child: TabBar(
+              indicatorWeight: 3,
+              labelPadding: const EdgeInsets.symmetric(vertical: 8,horizontal: 21),
               controller: _tabController,
               indicatorColor: AppColors.primary,
               labelColor: AppColors.primary,
               unselectedLabelColor: AppColors.textGrey,
               tabs: const [
-                Tab(text: 'Dalam\nAntrian'),
-                Tab(text: 'Dalam\nPengerjaan'),
-                Tab(text: 'Selesai\nPengerjaan'),
+                Center(child: Text('Dalam\nAntrian', textAlign: TextAlign.center)),
+                Center(child: Text('Dalam\nPengerjaan', textAlign: TextAlign.center)),
+                Center(child: Text('Selesai\nPengerjaan', textAlign: TextAlign.center)),
               ],
             ),
           ),
@@ -188,21 +191,15 @@ class _MainScreenState extends State<MainScreen> with SingleTickerProviderStateM
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addNewVehicle,
-        backgroundColor: AppColors.success,
-        icon: const Icon(Icons.add, color: Colors.white),
-        label: const Text(
-          'Tambah',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
+      floatingActionButton: Utils.buildFloatingActionButton(onPressed: () async{
+
+      })
     );
   }
 
   Widget _buildVehicleListTab(List<Map<String, String>> vehicles) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
       itemCount: vehicles.length,
       itemBuilder: (context, index) {
         final vehicle = vehicles[index];

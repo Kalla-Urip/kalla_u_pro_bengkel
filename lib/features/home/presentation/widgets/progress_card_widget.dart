@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 
 class ProgressCardWidget extends StatelessWidget {
   final String title;
@@ -21,6 +22,7 @@ class ProgressCardWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
@@ -30,13 +32,12 @@ class ProgressCardWidget extends StatelessWidget {
               fontSize: 12,
               fontWeight: FontWeight.w500,
             ),
-            textAlign: TextAlign.center,
           ),
           const SizedBox(height: 8),
           Text(
             value,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppColors.secondary,
               fontSize: 24,
               fontWeight: FontWeight.bold,
             ),

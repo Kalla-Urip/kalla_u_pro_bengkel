@@ -20,6 +20,11 @@ class AppTextStyles {
     fontWeight: FontWeight.bold,
     color: AppColors.textPrimary,
   );
+  static const TextStyle subtitle3 = TextStyle(
+    fontSize: 14,
+    fontWeight: FontWeight.w600,
+    color: Colors.white,
+  );
 
   static const TextStyle body1 = TextStyle(
     fontSize: 16,
