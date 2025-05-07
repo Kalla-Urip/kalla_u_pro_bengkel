@@ -47,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Logo
-            SvgPicture.asset(
+            Image.asset(
               ImageResources.kallaToyotaLogopng,
               width: 200,
               height: 100,

@@ -16,8 +16,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      title: 'Flutter Demo',
+      title: 'U Pro Bengkel',
       theme: AppTheme.lightTheme,
+      debugShowCheckedModeBanner: false,
       routerConfig: AppRoutes.router,
       // home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
