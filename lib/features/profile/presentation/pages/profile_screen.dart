@@ -6,7 +6,7 @@ import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({Key? key}) : super(key: key);
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

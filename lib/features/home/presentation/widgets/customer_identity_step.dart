@@ -13,7 +13,7 @@ class CustomerIdentityStep extends StatelessWidget {
   final ValueChanged<bool?> onMToyotaAppChanged;
 
   const CustomerIdentityStep({
-    Key? key,
+    super.key,
     required this.formKey,
     required this.plateNumberController,
     required this.vehicleTypeController,
@@ -22,7 +22,7 @@ class CustomerIdentityStep extends StatelessWidget {
     required this.insuranceController,
     required this.hasMToyotaApp,
     required this.onMToyotaAppChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

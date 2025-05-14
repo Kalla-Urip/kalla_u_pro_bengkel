@@ -7,7 +7,7 @@ import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();

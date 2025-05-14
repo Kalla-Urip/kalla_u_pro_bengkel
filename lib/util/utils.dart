@@ -24,7 +24,7 @@ class Utils {
       isExtended: true,
       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
       backgroundColor: AppColors.primary,
-      extendedPadding: EdgeInsets.symmetric(horizontal: 12,vertical: 1),
+      extendedPadding: const EdgeInsets.symmetric(horizontal: 12,vertical: 1),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(100), // Adjust the radius here
       ),

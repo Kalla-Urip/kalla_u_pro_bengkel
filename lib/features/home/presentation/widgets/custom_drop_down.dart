@@ -8,12 +8,12 @@ class CustomDropdown extends StatefulWidget {
   final String? Function(String?)? validator;
 
   const CustomDropdown({
-    Key? key,
+    super.key,
     required this.controller,
     required this.hintText,
     required this.items,
     this.validator,
-  }) : super(key: key);
+  });
 
   @override
   State<CustomDropdown> createState() => _CustomDropdownState();

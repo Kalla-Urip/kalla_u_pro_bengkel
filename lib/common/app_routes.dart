@@ -27,7 +27,7 @@ class AppRoutes {
       ),
       GoRoute(
         path: login,
-        builder: (context, state) =>  LoginScreen(),
+        builder: (context, state) =>  const LoginScreen(),
       ),
       GoRoute(
         path: main,

@@ -8,7 +8,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/notes_and
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/vehicle_condition_step.dart';
 
 class AddCustomerScreen extends StatefulWidget {
-  const AddCustomerScreen({Key? key}) : super(key: key);
+  const AddCustomerScreen({super.key});
 
   @override
   State<AddCustomerScreen> createState() => _AddCustomerScreenState();

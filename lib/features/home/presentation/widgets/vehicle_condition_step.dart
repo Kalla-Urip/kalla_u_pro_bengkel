@@ -13,7 +13,7 @@ class VehicleConditionStep extends StatelessWidget {
   final ValueChanged<String?> onTireFRConditionChanged;
 
   const VehicleConditionStep({
-    Key? key,
+    super.key,
     required this.formKey,
     required this.engineCondition,
     required this.floorMatCondition,
@@ -23,7 +23,7 @@ class VehicleConditionStep extends StatelessWidget {
     required this.onFloorMatConditionChanged,
     required this.onDriverFloorMatChanged,
     required this.onTireFRConditionChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

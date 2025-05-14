@@ -11,14 +11,14 @@ class NotesAndOthersStep extends StatelessWidget {
   final ValueChanged<bool?> onTradeInChanged;
 
   const NotesAndOthersStep({
-    Key? key,
+    super.key,
     required this.formKey,
     required this.serviceTypeController,
     required this.notesController,
     required this.mechanicController,
     required this.isTradeIn,
     required this.onTradeInChanged,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

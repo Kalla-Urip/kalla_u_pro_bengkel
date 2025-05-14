@@ -8,7 +8,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_
 import 'package:kalla_u_pro_bengkel/util/utils.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  const MainScreen({super.key});
 
   @override
   State<MainScreen> createState() => _MainScreenState();
