@@ -63,6 +63,7 @@ class _MainScreenState extends State<MainScreen> {
       ),
       floatingActionButton: Utils.buildFloatingActionButton(onPressed: () async {
         // Add vehicle functionality
+        context.push(AppRoutes.addCustomer);
       }),
     );
   }

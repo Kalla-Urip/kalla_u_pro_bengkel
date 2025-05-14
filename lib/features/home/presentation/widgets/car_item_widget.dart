@@ -11,14 +11,14 @@ class CarItemWidget extends StatelessWidget {
   final VoidCallback onTap;
 
   const CarItemWidget({
-    Key? key,
+    super.key,
     required this.name,
     required this.plate,
     required this.type,
     required this.year,
     required this.index,
     required this.onTap,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

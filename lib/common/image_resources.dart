@@ -7,6 +7,11 @@ class ImageResources {
   static const String appIconSvg = "assets/icons/app_icon.svg";
   static const String appIconPng = "assets/icons/app_icon.png";
 
+  // Stepper Icons 
+  static const String icArrowActiveRight = 'assets/icons/ic_arrow_active_right.svg';
+  static const String icArrowInactiveRight = 'assets/icons/ic_arrow_inactive_right.svg';
+  
+
   //images
 	static const String kallaToyotaLogoWhitepng = "assets/images/kalla_toyota_logo_white.png";
 	static const String kallaToyotaLogopng = "assets/images/kalla_toyota_logo.png";
