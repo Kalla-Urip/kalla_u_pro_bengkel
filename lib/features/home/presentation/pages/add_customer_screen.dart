@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
+import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/notes_and_other_step.dart';
@@ -31,17 +32,56 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _insuranceController = TextEditingController();
   bool _hasMToyotaApp = false;
   
-  // Controllers and data for vehicle condition (Step 2)
-  String _engineCondition = '';
-  String _floorMatCondition = '';
-  String _driverFloorMat = '';
-  String _tireFRCondition = '';
+  // Data for vehicle condition (Step 2)
+  // Updated to use maps for easier state management
+  Map<String, String> _conditionValues = {};
+  Map<String, bool> _carryItemValues = {
+    'STNK': false,
+    'Booklet': false,
+    'Toolset': false,
+    'Payung': false,
+    'Uang': false,
+    'Kotak P3K': false,
+    'Segitiga Pengaman': false,
+  };
   
   // Controllers and data for notes and others (Step 3)
   final _serviceTypeController = TextEditingController();
   final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
   bool _isTradeIn = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    
+    // Initialize default values for condition
+    _conditionValues = {
+      'ruangMesin': '',
+      'karpetDasar': '',
+      'karpetPengemudi': '',
+      'banFRRH': '',
+      'banFRLH': '',
+      'banRRRH': '',
+      'banRRLH': '',
+      'baterai': '',
+      'bbm': '',
+      'kilometer': '',
+    };
+    
+    // Initialize body condition
+    final bodyParts = [
+      'Kap Mesin', 'Atap Mobil', 'Bumper Depan', 'Bumper Belakang', 
+      'Fender Depan Kanan', 'Fender Depan Kiri', 'Fender Belakang Kanan', 
+      'Fender Belakang Kiri', 'Pintu Depan Kanan', 'Pintu Depan Kiri', 
+      'Pintu Belakang Kanan', 'Pintu Belakang Kiri', 'Spion Kanan', 'Spion Kiri'
+    ];
+    
+    for (final part in bodyParts) {
+      final key = 'body_${part.replaceAll(' ', '_').toLowerCase()}';
+      _conditionValues[key] = '';
+    }
+  }
   
   @override
   void dispose() {
@@ -62,12 +102,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
+        leadingWidth: 21,
         title: const Text(
           'Tambah Customer',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-          ),
+          style: AppTextStyles.subtitle2
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
@@ -225,28 +263,16 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       case 1:
         return VehicleConditionStep(
           formKey: _conditionFormKey,
-          engineCondition: _engineCondition,
-          floorMatCondition: _floorMatCondition,
-          driverFloorMat: _driverFloorMat,
-          tireFRCondition: _tireFRCondition,
-          onEngineConditionChanged: (value) {
+          conditionValues: _conditionValues,
+          carryItemValues: _carryItemValues,
+          onConditionChanged: (values) {
             setState(() {
-              _engineCondition = value ?? '';
+              _conditionValues = values;
             });
           },
-          onFloorMatConditionChanged: (value) {
+          onCarryItemChanged: (values) {
             setState(() {
-              _floorMatCondition = value ?? '';
-            });
-          },
-          onDriverFloorMatChanged: (value) {
-            setState(() {
-              _driverFloorMat = value ?? '';
-            });
-          },
-          onTireFRConditionChanged: (value) {
-            setState(() {
-              _tireFRCondition = value ?? '';
+              _carryItemValues = values;
             });
           },
         );
@@ -380,19 +406,22 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
   
-  void _saveCustomerData() {
+    void _saveCustomerData() {
     // Collect all data and save
     final customerData = {
+      // Step 1: Customer Identity
       'plateNumber': _plateNumberController.text,
       'vehicleType': _vehicleTypeController.text,
       'vehicleYear': _vehicleYearController.text,
       'address': _addressController.text,
       'insurance': _insuranceController.text,
       'hasMToyotaApp': _hasMToyotaApp,
-      'engineCondition': _engineCondition,
-      'floorMatCondition': _floorMatCondition,
-      'driverFloorMat': _driverFloorMat,
-      'tireFRCondition': _tireFRCondition,
+      
+      // Step 2: Vehicle Condition
+      'conditionValues': _conditionValues,
+      'carryItemValues': _carryItemValues,
+      
+      // Step 3: Notes and Others
       'serviceType': _serviceTypeController.text,
       'notes': _notesController.text,
       'mechanic': _mechanicController.text,
