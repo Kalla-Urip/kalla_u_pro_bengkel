@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
+
 class CustomerIdentityStep extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController plateNumberController;
@@ -27,13 +28,18 @@ class CustomerIdentityStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // Sample vehicle types for dropdown
-    final vehicleTypes = ['Avanza', 'Calya', 'Innova', 'Rush', 'Veloz', 'Zenix'];
-    
+    final vehicleTypes = [
+      'Avanza',
+      'Calya',
+      'Innova',
+      'Rush',
+      'Veloz',
+      'Zenix'
+    ];
+
     // Sample years for dropdown
-    final years = List.generate(10, (index) => (DateTime.now().year - index).toString());
-    
-    // Sample insurance options
-    final insuranceOptions = ['Askrindo', 'ACA', 'Adira', 'Allianz', 'Asuransi Sinar Mas', 'Astra Buana'];
+    final years =
+        List.generate(10, (index) => (DateTime.now().year - index).toString());
 
     return Form(
       key: formKey,
@@ -62,11 +68,12 @@ class CustomerIdentityStep extends StatelessWidget {
 
           // Tahun Kendaraan
           _buildSectionTitle('Tahun Kendaraan'),
-          CustomDropdown(
+          CustomTextField(
             controller: vehicleYearController,
-            hintText: 'Pilih tahun kendaraan',
-            items: years,
-            // Removed validator to allow empty selection
+            hintText: 'Masukkan tahun kendaraan',
+            keyboardType: TextInputType.number,
+            // Input formatter to allow only digits
+            // Note: You'll need to add this parameter to your CustomTextField widget
           ),
           const SizedBox(height: 16),
 
@@ -82,10 +89,9 @@ class CustomerIdentityStep extends StatelessWidget {
 
           // Asuransi
           _buildSectionTitle('Asuransi'),
-          CustomDropdown(
+          CustomTextField(
             controller: insuranceController,
             hintText: 'Pilih asuransi',
-            items: insuranceOptions,
             // Optional field
           ),
           const SizedBox(height: 16),
@@ -96,6 +102,10 @@ class CustomerIdentityStep extends StatelessWidget {
             children: [
               Radio<bool>(
                 value: true,
+                visualDensity: const VisualDensity(
+                  horizontal: VisualDensity.minimumDensity,
+                  vertical: VisualDensity.minimumDensity,
+                ),
                 groupValue: hasMToyotaApp,
                 onChanged: onMToyotaAppChanged,
                 activeColor: AppColors.primary,
@@ -107,6 +117,10 @@ class CustomerIdentityStep extends StatelessWidget {
                 groupValue: hasMToyotaApp,
                 onChanged: onMToyotaAppChanged,
                 activeColor: AppColors.primary,
+                visualDensity: const VisualDensity(
+                  horizontal: VisualDensity.minimumDensity,
+                  vertical: VisualDensity.minimumDensity,
+                ),
               ),
               const Text('Belum'),
             ],

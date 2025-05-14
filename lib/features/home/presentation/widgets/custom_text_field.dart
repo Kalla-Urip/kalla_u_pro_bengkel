@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 
 class CustomTextField extends StatelessWidget {
@@ -12,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final Widget? prefix;
   final bool readOnly;
   final VoidCallback? onTap;
+  final List<TextInputFormatter>? inputFormatters; // Added this parameter
 
   const CustomTextField({
     super.key,
@@ -25,6 +27,7 @@ class CustomTextField extends StatelessWidget {
     this.prefix,
     this.readOnly = false,
     this.onTap,
+    this.inputFormatters, // Added this parameter
   });
 
   @override
@@ -37,8 +40,12 @@ class CustomTextField extends StatelessWidget {
       readOnly: readOnly,
       onTap: onTap,
       validator: validator,
+      inputFormatters: keyboardType == TextInputType.number 
+          ? [FilteringTextInputFormatter.digitsOnly] 
+          : inputFormatters,
       style: const TextStyle(fontSize: 14),
       decoration: InputDecoration(
+        fillColor: Colors.white,
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
