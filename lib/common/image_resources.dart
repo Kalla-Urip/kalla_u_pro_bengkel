@@ -6,6 +6,7 @@ class ImageResources {
 	static const String icProfile = "assets/icons/ic_profile.svg";
   static const String appIconSvg = "assets/icons/app_icon.svg";
   static const String appIconPng = "assets/icons/app_icon.png";
+  static const String icWarning = "assets/icons/ic_warning.svg";
 
   // Stepper Icons 
   static const String icArrowActiveRight = 'assets/icons/ic_arrow_active_right.svg';

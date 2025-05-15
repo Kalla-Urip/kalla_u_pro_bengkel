@@ -375,36 +375,109 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   }
   
   void _submitForm() {
-    // Show confirmation dialog
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Konfirmasi Penyimpanan'),
-        content: const Text(
-          'Apakah Anda yakin ingin menyimpan data customer ini? '
-          'Pastikan semua informasi yang Anda masukkan sudah benar.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-            },
-            child: const Text('Batal'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Close dialog
-              Navigator.pop(context);
-              // Save data and return to previous screen
-              _saveCustomerData();
-              context.pop();
-            },
-            child: const Text('Simpan'),
-          ),
-        ],
+  // Show custom confirmation dialog
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.white,
+      surfaceTintColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
       ),
-    );
-  }
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Custom icon with circular background
+            SvgPicture.asset(
+              ImageResources.icWarning,
+              width: 100,
+              ),
+            const SizedBox(height: 16),
+            
+            // Title
+             Text(
+              'Konfirmasi Tambah Customer',
+              style: AppTextStyles.subtitle2.copyWith(
+                color: AppColors.textPrimary
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            
+            // Subtitle
+            const Text(
+              'Silahkan Klik Ya, jika data customer Anda telah sesuai',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 24),
+            
+            // Buttons
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Batal button
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                    style: OutlinedButton.styleFrom(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      side: BorderSide(color: Colors.grey),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child:  Text(
+                      'Batal',
+                      style: AppTextStyles.subtitle2.copyWith(
+                color: AppColors.textPrimary
+              ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                
+                // Ya button
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      // Close dialog
+                      Navigator.pop(context);
+                      // Save data and return to previous screen
+                      _saveCustomerData();
+                      context.pop();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text(
+                      'Ya',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
   
     void _saveCustomerData() {
     // Collect all data and save
