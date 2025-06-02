@@ -1,41 +1,39 @@
+// kalla_u_pro_bengkel/core/services/auth_services.dart
+import 'package:kalla_u_pro_bengkel/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 class AuthService {
   final SharedPreferences _prefs;
-  
-  static const String _isLoggedInKey = 'isLoggedIn';
-  static const String _userNameKey = 'userName';
-  static const String _userNikKey = 'userNik';
-
-  // Constructor takes SharedPreferences instance
   AuthService(this._prefs);
 
-  // Check if user is logged in
   Future<bool> isLoggedIn() async {
-    return _prefs.getBool(_isLoggedInKey) ?? false;
+    return _prefs.getBool(PrefKeys.isLoggedInKey) ?? false;
   }
 
-  // Login and save user data
-  Future<void> login(String name, String nik) async {
-    await _prefs.setBool(_isLoggedInKey, true);
-    await _prefs.setString(_userNameKey, name);
-    await _prefs.setString(_userNikKey, nik);
+  // Updated login method
+  Future<void> login(String name, String nik, String accessToken) async {
+    await _prefs.setBool(PrefKeys.isLoggedInKey, true);
+    await _prefs.setString(PrefKeys.userNameKey, name);
+    await _prefs.setString(PrefKeys.userNikKey, nik);
+    await _prefs.setString(PrefKeys.accessToken, accessToken); // Save access token
   }
 
-  // Get user name
   Future<String> getUserName() async {
-    return _prefs.getString(_userNameKey) ?? '';
+    return _prefs.getString(PrefKeys.userNameKey) ?? '';
   }
 
-  // Get user NIK
   Future<String> getUserNik() async {
-    return _prefs.getString(_userNikKey) ?? '';
+    return _prefs.getString(PrefKeys.userNikKey) ?? '';
   }
 
-  // Logout
+  // Get access token
+  Future<String?> getAccessToken() async {
+    return _prefs.getString(PrefKeys.accessToken);
+  }
+
   Future<void> logout() async {
-    await _prefs.setBool(_isLoggedInKey, false);
-    await _prefs.remove(_userNameKey);
-    await _prefs.remove(_userNikKey);
+    await _prefs.setBool(PrefKeys.isLoggedInKey, false);
+    await _prefs.remove(PrefKeys.userNameKey);
+    await _prefs.remove(PrefKeys.userNikKey);
+    await _prefs.remove(PrefKeys.accessToken); // Remove access token on logout
   }
 }
