@@ -14,10 +14,13 @@ class AppRoutes {
   static const String main = '/main';
   static const String profile = '/profile';
   static const String addCustomer = '/add-customer';
+
+  static final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
   
 
   // GoRouter configuration
   static final router = GoRouter(
+    navigatorKey: rootNavigatorKey, 
     initialLocation: splash,
     debugLogDiagnostics: true,
     routes: [

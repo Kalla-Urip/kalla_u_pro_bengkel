@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart'; // Untuk kDebugMode
 import 'package:get_it/get_it.dart';
 import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
+import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/repositories/auth_repositories.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
@@ -94,6 +95,8 @@ Future<void> setupServiceLocator() async {
 
   // Core
   locator.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(locator()));
+   locator.registerLazySingleton<FcmService>(() => FcmService()); // Daftarkan FcmService
+
 
   // Features - Auth
   // Data sources
@@ -114,6 +117,7 @@ Future<void> setupServiceLocator() async {
     () => LoginCubit(
       authRepository: locator(),
       authService: locator(),
+      fcmService: locator()
     ),
   );
 }

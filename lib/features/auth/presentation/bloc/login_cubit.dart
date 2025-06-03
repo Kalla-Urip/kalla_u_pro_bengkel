@@ -3,14 +3,21 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_message_resolver.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
+import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/models/login_response_model.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/repositories/auth_repositories.dart';
 
 class LoginCubit extends Cubit<LoginState> {
   final AuthRepository authRepository;
   final AuthService authService;
+  final FcmService _fcmService; // Inject FcmService
 
-  LoginCubit({required this.authRepository, required this.authService}) : super(LoginInitial());
+  LoginCubit({
+    required this.authRepository,
+    required this.authService,
+    required FcmService fcmService, // Tambahkan parameter
+  }) : _fcmService = fcmService, // Inisialisasi
+       super(LoginInitial());
 
   Future<void> attemptLogin({required String nik, required String password}) async {
     emit(LoginLoading());
@@ -35,6 +42,18 @@ class LoginCubit extends Cubit<LoginState> {
         }
       },
     );
+  }
+
+  Future<void> logout() async {
+    emit(LoginLoading()); // Opsional: emit state loading jika perlu
+    try {
+      await authService.logout(); // Hapus data sesi lokal dari AuthService
+      await _fcmService.deleteFcmToken(); // Hapus FCM token
+      emit(LoginInitial()); // Kembali ke state awal (atau state logged out khusus)
+    } catch (e) {
+      // Tangani error jika ada, mungkin emit LoginFailure
+      emit(LoginFailure(message: "Logout gagal: ${e.toString()}"));
+    }
   }
 }
 abstract class LoginState extends Equatable {

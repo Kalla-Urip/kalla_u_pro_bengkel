@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
+import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -42,7 +44,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _isLoading = true;
     });
 
-    await _authService.logout();
+    await context.read<LoginCubit>().logout();
 
     if (mounted) {
       context.go(AppRoutes.login);

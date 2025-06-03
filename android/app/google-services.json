@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "11743303784",
+    "project_id": "kalla-urip",
+    "storage_bucket": "kalla-urip.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11743303784:android:ef71444c9fe185ccbb43dd",
+        "android_client_info": {
+          "package_name": "com.example.kalla_u_pro_bengkel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKkpuFXfvBgu_dY6jzjAsPqpj8K4xp4wM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11743303784:android:947f8e7360711c12bb43dd",
+        "android_client_info": {
+          "package_name": "com.example.test_firebase"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKkpuFXfvBgu_dY6jzjAsPqpj8K4xp4wM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
