@@ -17,16 +17,19 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<LoginResponseModel> login(String nik, String password) async {
-    const url = '${ApiConstants.baseUrl}${ApiConstants.loginEndpoint}';
-    
+    const url = ApiConstants.loginEndpoint;
+
     try {
       final response = await client.post(
-        url,
+        url, // Hanya endpoint
         data: {'nik': nik, 'password': password},
         options: Options(
+          // Content-Type ini spesifik untuk form-urlencoded, jadi baik untuk tetap di sini
+          // Jika sebagian besar request Anda adalah JSON, Anda bisa set 'Content-Type': 'application/json' di BaseOptions Dio
+          // dan hanya override di sini jika berbeda.
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         ),
-      ).timeout(const Duration(seconds: 30));
+      );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Pastikan response.data adalah Map sebelum di-parse

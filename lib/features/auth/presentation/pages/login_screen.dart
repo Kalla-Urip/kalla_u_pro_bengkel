@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart'; // Masih diperlukan untuk context.read dan BlocConsumer
-import 'package:go_router/go_router.dart'; 
+import 'package:go_router/go_router.dart';
+import 'package:kalla_u_pro_bengkel/common/app_colors.dart'; 
 
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
+import 'package:kalla_u_pro_bengkel/util/utils.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -33,6 +35,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _performLogin(BuildContext context) async {
+    FocusScope.of(context).unfocus();
     if (!_formKey.currentState!.validate()) {
       return;
     }
@@ -55,9 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
             if (state is LoginSuccess) {
               context.go(AppRoutes.main); 
             } else if (state is LoginFailure) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state.message)),
-              );
+              Utils.showErrorSnackBar(context, 'Login gagal: ${state.message}');
             }
           },
           builder: (context, state) {
@@ -97,6 +98,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               const SizedBox(height: 8),
                               TextFormField(
                                 controller: _nikController,
+                                 cursorColor: AppColors.primary,
                                 decoration: const InputDecoration(hintText: 'Masukkan NIK Karyawan'),
                                 keyboardType: TextInputType.number,
                                 validator: (value) {
@@ -116,6 +118,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: !_isPasswordVisible,
+                                 cursorColor: AppColors.primary,
                                 decoration: InputDecoration(
                                   hintText: 'Masukkan Password',
                                   suffixIcon: IconButton(
