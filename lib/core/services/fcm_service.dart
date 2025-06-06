@@ -243,7 +243,7 @@ class FcmService {
       return;
     }
 
-    const String url = ApiConstants.baseUrl + "/mobile/mechanic/auth/fcm"; // Gabungkan baseUrl dan endpoint
+    const String url = ApiConstants.baseUrl + "/mechanic/auth/fcm"; // Gabungkan baseUrl dan endpoint
     if (kDebugMode) {
       print("Sending FCM token to backend: $token at $url");
     }

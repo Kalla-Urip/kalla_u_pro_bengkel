@@ -2,7 +2,9 @@
 class ApiConstants {
   static const String baseUrl = 'http://141.11.25.72:5000/mobile';
   static const String loginEndpoint = '/mechanic/auth/login';
-  // Add other endpoints here
+
+  // Home
+   static const String vehicleTypeEndpoint = '/mechanic/vehicle-type';
 }
 
 class PrefKeys {

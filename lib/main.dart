@@ -6,6 +6,7 @@ import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/app_themes.dart';
 import 'package:kalla_u_pro_bengkel/di/service_locator.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/firebase_options.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
@@ -33,6 +34,9 @@ void main()  async {
         // Daftarkan LoginCubit di sini agar tersedia secara global
         BlocProvider<LoginCubit>(
           create: (context) => locator<LoginCubit>(),
+        ),
+        BlocProvider<GetVehicleTypeCubit>(
+          create: (context) => locator<GetVehicleTypeCubit>(),
         ),
       ],
       child: const MyApp(), // MyApp sekarang menjadi child dari MultiBlocProvider

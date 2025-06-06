@@ -4,12 +4,16 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // Untuk kDebugMode
 import 'package:get_it/get_it.dart';
+import 'package:kalla_u_pro_bengkel/core/error/error_interceptor.dart';
 import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/repositories/auth_repositories.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -43,6 +47,7 @@ Future<void> setupServiceLocator() async {
         },
       ),
     );
+    dio.interceptors.add(ErrorInterceptor()); 
 
     // Interceptor untuk menambahkan token otentikasi
     dio.interceptors.add(
@@ -119,5 +124,24 @@ Future<void> setupServiceLocator() async {
       authService: locator(),
       fcmService: locator()
     ),
+  );
+
+  // Features - Home
+  // Data sources
+  locator.registerLazySingleton<HomeRemoteDataSource>(
+    () => HomeRemoteDataSourceImpl(client: locator()),
+  );
+
+  // Repositories
+  locator.registerLazySingleton<HomeRepository>(
+    () => HomeRepositoryImpl(
+      remoteDataSource: locator(),
+      networkInfo: locator(),
+    ),
+  );
+
+  // Cubits
+  locator.registerFactory(
+    () => GetVehicleTypeCubit(homeRepository: locator()),
   );
 }

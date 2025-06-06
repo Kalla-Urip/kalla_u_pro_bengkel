@@ -1,44 +1,43 @@
 
+import 'package:dio/dio.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
 
-class ServerException implements Exception {
-  final String? message;
-  final int? statusCode;
-  final ErrorCode errorCode; // Tambahkan ErrorCode
+class ServerException extends DioException {
+  ServerException({
+    required super.requestOptions,
+    String message = 'Terjadi kesalahan pada server.',
+    this.statusCode,
+    this.errorCode = ErrorCode.serverInternalError,
+  }) : super(message: message);
 
-  ServerException({this.message, this.statusCode, this.errorCode = ErrorCode.serverInternalError});
+  final int? statusCode;
+  final ErrorCode errorCode;
 
   @override
   String toString() => message ?? 'Terjadi kesalahan pada server (Kode Internal: ${errorCode.name}).';
 }
 
-class CacheException implements Exception {
-   final String message;
-   final ErrorCode errorCode; // Tambahkan ErrorCode
+class NoInternetException extends DioException {
+  NoInternetException({
+    required super.requestOptions,
+    String message = 'Tidak ada koneksi internet.',
+    this.errorCode = ErrorCode.noInternet,
+  }) : super(message: message);
 
-   CacheException({this.message = 'Terjadi kesalahan pada cache.', this.errorCode = ErrorCode.cacheError});
+  final ErrorCode errorCode;
 
-   @override
-  String toString() => message;
+  @override
+  String toString() => message ?? 'Tidak ada koneksi internet.';
 }
 
-class GeneralException implements Exception { // Ini biasanya untuk pesan dari API
-  final String message;
+class GeneralException extends DioException {
+   GeneralException({
+    required super.requestOptions,
+    required String message,
+    this.statusCode,
+    this.errorCode = ErrorCode.apiError,
+  }) : super(message: message);
+  
   final int? statusCode;
-  final ErrorCode errorCode; // Tambahkan ErrorCode
-
-  GeneralException(this.message, {this.statusCode, this.errorCode = ErrorCode.apiError});
-
-  @override
-  String toString() => message;
-}
-
-class NoInternetException implements Exception {
-  final String message;
-  final ErrorCode errorCode; // Tambahkan ErrorCode
-
-  NoInternetException({this.message = 'Tidak ada koneksi internet.', this.errorCode = ErrorCode.noInternet});
-
-  @override
-  String toString() => message;
+  final ErrorCode errorCode;
 }

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/notes_and_other_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/vehicle_condition_step.dart';
@@ -54,7 +56,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   @override
   void initState() {
     super.initState();
-    
+     final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
+    if (vehicleTypeState is GetVehicleTypeInitial) {
+      context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
+    }
+
+
     // Initialize default values for condition
     _conditionValues = {
       'ruangMesin': '',
@@ -81,6 +88,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       final key = 'body_${part.replaceAll(' ', '_').toLowerCase()}';
       _conditionValues[key] = '';
     }
+
   }
   
   @override

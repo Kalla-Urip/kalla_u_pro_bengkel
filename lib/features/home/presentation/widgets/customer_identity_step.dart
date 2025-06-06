@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
 
@@ -58,11 +60,60 @@ class CustomerIdentityStep extends StatelessWidget {
 
           // Tipe Kendaraan
           _buildSectionTitle('Tipe Kendaraan'),
-          CustomDropdown(
-            controller: vehicleTypeController,
-            hintText: 'Pilih tipe kendaraan',
-            items: vehicleTypes,
-            // Removed validator to allow empty selection
+          BlocBuilder<GetVehicleTypeCubit, GetVehicleTypeState>(
+            builder: (context, state) {
+              // --- 1. Loading State ---
+              if (state is GetVehicleTypeLoading) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 20.0),
+                    child: CircularProgressIndicator(
+                      color: AppColors.primary,
+                    ),
+                  ),
+                );
+              }
+              // --- 2. Failure State ---
+              if (state is GetVehicleTypeFailure) {
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.red.shade300),
+                    borderRadius: BorderRadius.circular(12),
+                    color: Colors.red.withOpacity(0.05),
+                  ),
+                  child: Column(
+                    children: [
+                      Text(state.message, textAlign: TextAlign.center, style: TextStyle(color: Colors.red.shade800)),
+                      const SizedBox(height: 4),
+                      TextButton(
+                        onPressed: () {
+                          context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
+                        },
+                        child: const Text('Coba Lagi', style: TextStyle(color: AppColors.primary)),
+                      ),
+                    ],
+                  ),
+                );
+              }
+              // --- 3. Success State ---
+              if (state is GetVehicleTypeSuccess) {
+                return CustomDropdown(
+                  controller: vehicleTypeController,
+                  hintText: 'Pilih tipe kendaraan',
+                  items: state.vehicleTypes.map((e) => e.name).toList(),
+                );
+              }
+              // --- 4. Initial State (Fallback) ---
+              return const Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20.0),
+                  child: CircularProgressIndicator(
+                    color: AppColors.primary,
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
 
