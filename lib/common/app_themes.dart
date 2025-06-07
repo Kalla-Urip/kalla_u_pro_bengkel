@@ -53,7 +53,7 @@ class AppTheme {
         padding: const EdgeInsets.symmetric(vertical: 12),
       ),
     ),
-    tabBarTheme: const TabBarTheme(
+    tabBarTheme: const TabBarThemeData(
       labelColor: AppColors.primary,
       unselectedLabelColor: AppColors.textGrey,
       indicatorColor: AppColors.primary,
