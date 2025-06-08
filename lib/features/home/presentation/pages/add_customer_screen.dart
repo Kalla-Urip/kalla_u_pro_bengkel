@@ -129,19 +129,21 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           },
         ),
       ),
-      body: Column(
-        children: [
-          // Custom stepper indicator
-          _buildStepperHeader(),
-          
-          // Main content area
-          Expanded(
-            child: _buildStepContent(),
-          ),
-          
-          // Bottom navigation buttons
-          _buildBottomButtons(),
-        ],
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Custom stepper indicator
+            _buildStepperHeader(),
+            
+            // Main content area
+            Expanded(
+              child: _buildStepContent(),
+            ),
+            
+            // Bottom navigation buttons
+            _buildBottomButtons(),
+          ],
+        ),
       ),
     );
   }

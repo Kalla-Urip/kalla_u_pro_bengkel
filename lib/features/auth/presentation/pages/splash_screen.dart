@@ -45,71 +45,73 @@ class _SplashScreenState extends State<SplashScreen> {
     
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          // Pattern SVG di background, posisi fit di bawah
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Image.asset(
-              ImageResources.patternPng,
-              fit: BoxFit.contain,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            // Pattern SVG di background, posisi fit di bawah
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Image.asset(
+                ImageResources.patternPng,
+                fit: BoxFit.contain,
+              ),
             ),
-          ),
-          
-          // Content layout dengan 2 bagian utama
-          Column(
-            children: [
-              // Bagian tengah - App Icon dan U-pro text
-              Expanded(
-                child: Center(
+            
+            // Content layout dengan 2 bagian utama
+            Column(
+              children: [
+                // Bagian tengah - App Icon dan U-pro text
+                Expanded(
+                  child: Center(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Image.asset(
+                          ImageResources.appIconPng,
+                          width: 100,
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          "U-pro",
+                          style: TextStyle(
+                            color: Colors.black,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Bagian bawah - Powered by dan Logo
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Image.asset(
-                        ImageResources.appIconPng,
-                        width: 100,
-                      ),
-                      const SizedBox(height: 8),
                       const Text(
-                        "U-pro",
+                        "Powered by:",
                         style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
+                          color: AppColors.textGrey800,
+                          fontSize: 14,
                         ),
+                      ),
+                      const SizedBox(height: 2),
+                      Image.asset(
+                        ImageResources.kallaToyotaLogopng,
+                        width: 200,
+                        height: 80,
                       ),
                     ],
                   ),
                 ),
-              ),
-              
-              // Bagian bawah - Powered by dan Logo
-              Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      "Powered by:",
-                      style: TextStyle(
-                        color: AppColors.textGrey800,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Image.asset(
-                      ImageResources.kallaToyotaLogopng,
-                      width: 200,
-                      height: 80,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
