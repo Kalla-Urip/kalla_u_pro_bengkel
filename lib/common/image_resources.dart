@@ -18,6 +18,7 @@ class ImageResources {
 	static const String kallaToyotaLogopng = "assets/images/kalla_toyota_logo.png";
 	static const String patternSvg = "assets/images/pattern_spash_screen.svg";
 	static const String patternPng = "assets/images/pattern_splash_screen.png";
+  static const String icBarcode = 'assets/icons/ic_barcode.svg';
 	
 
 }

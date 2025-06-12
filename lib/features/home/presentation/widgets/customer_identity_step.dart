@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
+import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
 
 class CustomerIdentityStep extends StatelessWidget {
   final GlobalKey<FormState> formKey;
+  // --- NEW CONTROLLERS & CALLBACK ---
+  final TextEditingController frameNumberController;
+  final TextEditingController nameController;
+  final TextEditingController dobController;
+  final TextEditingController whatsappController;
+  final VoidCallback onScanBarcode;
+  // --- END OF NEW CONTROLLERS & CALLBACK ---
   final TextEditingController plateNumberController;
   final TextEditingController vehicleTypeController;
   final TextEditingController vehicleYearController;
@@ -18,6 +28,12 @@ class CustomerIdentityStep extends StatelessWidget {
   const CustomerIdentityStep({
     super.key,
     required this.formKey,
+    // Add new required parameters
+    required this.frameNumberController,
+    required this.nameController,
+    required this.dobController,
+    required this.whatsappController,
+    required this.onScanBarcode,
     required this.plateNumberController,
     required this.vehicleTypeController,
     required this.vehicleYearController,
@@ -29,32 +45,123 @@ class CustomerIdentityStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Sample vehicle types for dropdown
-    final vehicleTypes = [
-      'Avanza',
-      'Calya',
-      'Innova',
-      'Rush',
-      'Veloz',
-      'Zenix'
-    ];
-
-    // Sample years for dropdown
-    final years =
-        List.generate(10, (index) => (DateTime.now().year - index).toString());
-
     return Form(
       key: formKey,
       child: ListView(
         padding: const EdgeInsets.all(16),
         physics: const BouncingScrollPhysics(),
         children: [
+          // --- NEW FIELDS AS PER REQUEST ---
+
+          // Nomor Rangka
+          _buildSectionTitle('Nomor Rangka'),
+          CustomTextField(
+            controller: frameNumberController,
+            hintText: 'Masukkan Nomor Rangka',
+            suffix: InkWell(
+              onTap: onScanBarcode,
+              child: Padding(
+                padding: const EdgeInsets.all(12.0),
+                child: SvgPicture.asset(
+                  ImageResources.icBarcode, // Assuming you have this asset
+                  width: 24,
+                  height: 24,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Tombol Cari
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () {
+                // TODO: Implement API call to search for frame number
+                print('Searching for frame number: ${frameNumberController.text}');
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Fitur pencarian belum diimplementasikan.')),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary.withOpacity(0.1),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  )
+              ),
+              child: const Text(
+                'Cari',
+                style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+
+          // Nama
+          _buildSectionTitle('Nama'),
+          CustomTextField(
+            controller: nameController,
+            hintText: 'Masukkan Nama',
+          ),
+          const SizedBox(height: 16),
+
+          // Tanggal Lahir
+          _buildSectionTitle('Tanggal Lahir'),
+          CustomTextField(
+            controller: dobController,
+            hintText: 'Pilih Tanggal Lahir',
+            readOnly: true,
+            onTap: () async {
+              DateTime? pickedDate = await showDatePicker(
+                context: context,
+                initialDate: DateTime.now(),
+                firstDate: DateTime(1950),
+                lastDate: DateTime.now(),
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme: const ColorScheme.light(
+                        primary: AppColors.primary,
+                        onPrimary: Colors.white,
+                        onSurface: AppColors.textPrimary,
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                        ),
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
+              );
+              if (pickedDate != null) {
+                String formattedDate = DateFormat('yyyy-MM-dd').format(pickedDate);
+                dobController.text = formattedDate;
+              }
+            },
+            suffix: const Icon(Icons.calendar_today, color: AppColors.textGrey, size: 20),
+          ),
+          const SizedBox(height: 16),
+
+          // No. Whatsapp
+          _buildSectionTitle('No. Whatsapp'),
+          CustomTextField(
+            controller: whatsappController,
+            hintText: 'Masukkan No. Whatsapp',
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 16),
+          
+          // --- END OF NEW FIELDS ---
+
           // Nomor Plat
           _buildSectionTitle('Nomor Plat'),
           CustomTextField(
             controller: plateNumberController,
             hintText: 'Masukkan nomor plat',
-            // Removed validator to allow empty fields
           ),
           const SizedBox(height: 16),
 
@@ -62,18 +169,14 @@ class CustomerIdentityStep extends StatelessWidget {
           _buildSectionTitle('Tipe Kendaraan'),
           BlocBuilder<GetVehicleTypeCubit, GetVehicleTypeState>(
             builder: (context, state) {
-              // --- 1. Loading State ---
               if (state is GetVehicleTypeLoading) {
                 return const Center(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 20.0),
-                    child: CircularProgressIndicator(
-                      color: AppColors.primary,
-                    ),
+                    child: CircularProgressIndicator(color: AppColors.primary),
                   ),
                 );
               }
-              // --- 2. Failure State ---
               if (state is GetVehicleTypeFailure) {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -96,7 +199,6 @@ class CustomerIdentityStep extends StatelessWidget {
                   ),
                 );
               }
-              // --- 3. Success State ---
               if (state is GetVehicleTypeSuccess) {
                 return CustomDropdown(
                   controller: vehicleTypeController,
@@ -104,13 +206,10 @@ class CustomerIdentityStep extends StatelessWidget {
                   items: state.vehicleTypes.map((e) => e.name).toList(),
                 );
               }
-              // --- 4. Initial State (Fallback) ---
               return const Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(vertical: 20.0),
-                  child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ),
+                  child: CircularProgressIndicator(color: AppColors.primary),
                 ),
               );
             },
@@ -123,8 +222,6 @@ class CustomerIdentityStep extends StatelessWidget {
             controller: vehicleYearController,
             hintText: 'Masukkan tahun kendaraan',
             keyboardType: TextInputType.number,
-            // Input formatter to allow only digits
-            // Note: You'll need to add this parameter to your CustomTextField widget
           ),
           const SizedBox(height: 16),
 
@@ -134,7 +231,6 @@ class CustomerIdentityStep extends StatelessWidget {
             controller: addressController,
             hintText: 'Masukkan alamat',
             maxLines: 2,
-            // Removed validator to allow empty fields
           ),
           const SizedBox(height: 16),
 
@@ -143,7 +239,6 @@ class CustomerIdentityStep extends StatelessWidget {
           CustomTextField(
             controller: insuranceController,
             hintText: 'Pilih asuransi',
-            // Optional field
           ),
           const SizedBox(height: 16),
 
