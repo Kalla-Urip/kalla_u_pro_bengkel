@@ -15,6 +15,8 @@ import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.
 import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -99,7 +101,7 @@ Future<void> setupServiceLocator() async {
     }
     return dio;
   });
-  
+
  locator.registerLazySingleton<RequestHandler>(() => RequestHandler(networkInfo: locator()));
 
   locator.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(locator()));
@@ -154,4 +156,11 @@ Future<void> setupServiceLocator() async {
   locator.registerFactory(
     () => AddCustomerCubit(homeRepository: locator()),
   );
+
+  locator.registerFactory(
+  () => GetStallsCubit(homeRepository: locator()),
+);
+locator.registerFactory(
+  () => GetMechanicsCubit(homeRepository: locator()),
+);
 }

@@ -1,18 +1,58 @@
 import 'package:dio/dio.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
 import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 
 abstract class HomeRemoteDataSource {
   Future<List<VehicleTypeModel>> getVehicleTypes();
   Future<void> addCustomer(Map<String, dynamic> data);
+  Future<List<StallModel>> getStalls();
+  Future<List<MechanicModel>> getMechanics();
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final Dio client;
 
   HomeRemoteDataSourceImpl({required this.client});
+
+  @override
+  Future<List<StallModel>> getStalls() async {
+    const url = ApiConstants.stallEndPoint; // Gunakan endpoint relatif
+    try {
+      final response = await client.get(url);
+      final stallResponse = StallResponseModel.fromJson(response.data);
+      return stallResponse.data;
+    } on DioException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(
+        requestOptions: RequestOptions(path: url),
+        message: 'Gagal memproses data stall: ${e.toString()}',
+        errorCode: ErrorCode.invalidResponse,
+      );
+    }
+  }
+
+  @override
+  Future<List<MechanicModel>> getMechanics() async {
+    const url = ApiConstants.mechanicEndpoint; // Gunakan endpoint relatif
+    try {
+      final response = await client.get(url);
+      final mechanicResponse = MechanicResponseModel.fromJson(response.data);
+      return mechanicResponse.data;
+    } on DioException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(
+        requestOptions: RequestOptions(path: url),
+        message: 'Gagal memproses data mekanik: ${e.toString()}',
+        errorCode: ErrorCode.invalidResponse,
+      );
+    }
+  }
 
   @override
   Future<List<VehicleTypeModel>> getVehicleTypes() async {

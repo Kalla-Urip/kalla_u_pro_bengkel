@@ -54,6 +54,13 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
       widget.onCarryItemChanged(_carryItemValues);
     });
   }
+  
+  @override
+  void dispose() {
+    _bbmController.dispose();
+    _kilometerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -181,6 +188,7 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
   Widget _buildSectionTitle(String title) {
     return Container(
       color: AppColors.grey100,
+      width: double.infinity,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Text(
@@ -195,7 +203,6 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
     );
   }
 
-  // New widget to consistently apply padding to section content
   Widget _buildSectionContent({required Widget child}) {
     return Padding(
       padding: const EdgeInsets.only(left: 16, top: 24, right: 16, bottom: 24),
@@ -229,10 +236,8 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
       children: options.map((option) {
         final isSelected = _conditionValues[key] == option;
 
-        // Determine button color based on option if color coded
         Color getButtonColor() {
           if (!isColorCoded) return isSelected ? AppColors.primary : Colors.transparent;
-
           switch (option.toLowerCase()) {
             case 'hijau':
               return Colors.green;
@@ -276,35 +281,6 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
     );
   }
   
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String hintText,
-    required TextInputType keyboardType,
-    required ValueChanged<String> onChanged,
-  }) {
-    return TextFormField(
-      controller: controller,
-      keyboardType: keyboardType,
-      onChanged: onChanged,
-      decoration: InputDecoration(
-        hintText: hintText,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: Colors.grey.shade300),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.primary),
-        ),
-      ),
-    );
-  }
-  
   Widget _buildCarryItemsGrid() {
     final items = {
       'STNK': 'STNK',
@@ -342,13 +318,22 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  value,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w400,
+                // *** BAGIAN INI YANG DIPERBAIKI ***
+                // Membungkus Text dengan Expanded agar fleksibel
+                Expanded(
+                  child: Text(
+                    value,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    // Properti softWrap dan overflow untuk penanganan teks yang lebih baik
+                    softWrap: true,
+                    overflow: TextOverflow.fade,
                   ),
                 ),
+                // Menambah jarak antara teks dan checkbox
+                const SizedBox(width: 8),
                 Container(
                   width: 24,
                   height: 24,
@@ -422,7 +407,7 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
     );
   }
 
-   Widget _buildValidatedTextField({
+  Widget _buildValidatedTextField({
     required TextEditingController controller,
     required String label,
     required String hint,
@@ -447,12 +432,5 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
         ),
       ],
     );
-  }
-
-  @override
-  void dispose() {
-    _bbmController.dispose();
-    _kilometerController.dispose();
-    super.dispose();
   }
 }

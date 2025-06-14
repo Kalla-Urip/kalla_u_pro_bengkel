@@ -1,15 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
+
 class NotesAndOthersStep extends StatelessWidget {
-final GlobalKey<FormState> formKey;
+  final GlobalKey<FormState> formKey;
   final TextEditingController serviceTypeController;
   final TextEditingController notesController;
   final TextEditingController mechanicController;
   final TextEditingController stallController;
   final bool isTradeIn;
   final ValueChanged<bool?> onTradeInChanged;
+  // Menerima state, bukan list model
+  final GetStallsState stallState;
+  final GetMechanicsState mechanicState;
 
   const NotesAndOthersStep({
     super.key,
@@ -20,18 +29,21 @@ final GlobalKey<FormState> formKey;
     required this.stallController,
     required this.isTradeIn,
     required this.onTradeInChanged,
+    // Mengubah parameter di constructor
+    required this.stallState,
+    required this.mechanicState,
   });
 
   @override
   Widget build(BuildContext context) {
-final serviceTypes = {
+    // Service types can remain hardcoded if they are static
+    final serviceTypes = {
       'Tune Up': 'Tune Up',
       'Ganti Oli': 'Ganti Oli',
       'Pemeriksaan Rutin': 'Pemeriksaan Rutin',
       'Perbaikan AC': 'Perbaikan AC',
       'Lainnya': 'Lainnya'
-    };    final Map<String, String> mechanics = {'Muh Rifqy': '3'}; // Tampilan Nama : ID
-    final Map<String, String> stalls = {'Stall A': '1'};     // Tampilan Nama : ID
+    };
 
     return Form(
       key: formKey,
@@ -45,7 +57,8 @@ final serviceTypes = {
             controller: serviceTypeController,
             hintText: 'Pilih jenis service',
             items: serviceTypes,
-            validator: (value) => (value?.isEmpty ?? true) ? 'Jenis service wajib dipilih' : null,
+            validator: (value) =>
+                (value?.isEmpty ?? true) ? 'Jenis service wajib dipilih' : null,
           ),
           const SizedBox(height: 24),
 
@@ -59,25 +72,14 @@ final serviceTypes = {
           ),
           const SizedBox(height: 24),
 
-          // Petugas Bengkel
+          // Petugas Bengkel (Mekanik) - Dengan error handling
           _buildSectionTitle('Petugas Bengkel (Mekanik)'),
-          CustomDropdown(
-            controller: mechanicController, // Controller untuk ID
-            hintText: 'Pilih petugas bengkel',
-            items: mechanics,
-            validator: (value) => (value?.isEmpty ?? true) ? 'Petugas bengkel wajib dipilih' : null,
-            // onChanged tidak lagi diperlukan di sini karena widget sudah menanganinya
-          ),
+          _buildMechanicDropdown(context),
           const SizedBox(height: 24),
 
-          // Stall
+          // Stall - Dengan error handling
           _buildSectionTitle('Stall'),
-          CustomDropdown(
-            controller: stallController, // Controller untuk ID
-            hintText: 'Pilih stall',
-            items: stalls,
-            validator: (value) => (value?.isEmpty ?? true) ? 'Stall wajib dipilih' : null,
-          ),
+          _buildStallDropdown(context),
           const SizedBox(height: 24),
 
           // Trade In
@@ -85,6 +87,87 @@ final serviceTypes = {
           _buildTradeInOptions(),
           if (isTradeIn) _buildTradeInInfoBox(),
           const SizedBox(height: 40),
+        ],
+      ),
+    );
+  }
+
+  // Widget baru untuk membangun dropdown stall dengan penanganan state
+  Widget _buildStallDropdown(BuildContext context) {
+    final state = stallState; // Gunakan state yang di-pass
+    if (state is GetStallsSuccess) {
+      final Map<String, String> stallItems = {
+        for (var stall in state.stalls) stall.name: stall.id.toString()
+      };
+      return CustomDropdown(
+        controller: stallController,
+        hintText: 'Pilih stall',
+        items: stallItems,
+        validator: (value) =>
+            (value?.isEmpty ?? true) ? 'Stall wajib dipilih' : null,
+      );
+    }
+    if (state is GetStallsFailure) {
+      return _buildErrorWidget(
+        message: state.message,
+        onRetry: () {
+          context.read<GetStallsCubit>().fetchStalls();
+        },
+      );
+    }
+    // State Loading atau Initial
+    return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+  }
+
+  // Widget baru untuk membangun dropdown mekanik dengan penanganan state
+  Widget _buildMechanicDropdown(BuildContext context) {
+    final state = mechanicState; // Gunakan state yang di-pass
+    if (state is GetMechanicsSuccess) {
+      final Map<String, String> mechanicItems = {
+        for (var mechanic in state.mechanics)
+          mechanic.name: mechanic.id.toString()
+      };
+      return CustomDropdown(
+        controller: mechanicController,
+        hintText: 'Pilih petugas bengkel',
+        items: mechanicItems,
+        validator: (value) =>
+            (value?.isEmpty ?? true) ? 'Petugas bengkel wajib dipilih' : null,
+      );
+    }
+    if (state is GetMechanicsFailure) {
+      return _buildErrorWidget(
+        message: state.message,
+        onRetry: () {
+          context.read<GetMechanicsCubit>().fetchMechanics();
+        },
+      );
+    }
+    // State Loading atau Initial
+    return const Center(child: CircularProgressIndicator(color: AppColors.primary));
+  }
+
+  // Helper widget untuk error yang bisa dipakai ulang dengan gaya yang sama
+  Widget _buildErrorWidget(
+      {required String message, required VoidCallback onRetry}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.red.shade300),
+        borderRadius: BorderRadius.circular(12),
+        color: Colors.red.withOpacity(0.05),
+      ),
+      child: Column(
+        children: [
+          Text(message,
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.red.shade800)),
+          const SizedBox(height: 4),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Coba Lagi',
+                style: TextStyle(color: AppColors.primary)),
+          ),
         ],
       ),
     );
@@ -174,8 +257,6 @@ final serviceTypes = {
               ),
             ),
             const SizedBox(height: 8),
-            
-            // Optional: add more details or fields for trade-in follow-up
             _buildTradeInFollowupOptions(),
           ],
         ),

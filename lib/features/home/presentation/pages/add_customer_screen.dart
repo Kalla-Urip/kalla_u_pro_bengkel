@@ -5,7 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/custom_barode_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
@@ -20,7 +24,7 @@ class AddCustomerScreen extends StatefulWidget {
 }
 
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
-   int _currentStep = 0;
+  int _currentStep = 0;
   final _identityFormKey = GlobalKey<FormState>();
   final _conditionFormKey = GlobalKey<FormState>();
   final _notesFormKey = GlobalKey<FormState>();
@@ -40,8 +44,13 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   // Step 2 Data
   Map<String, String> _conditionValues = {};
   Map<String, bool> _carryItemValues = {
-    'STNK': false, 'Booklet': false, 'Toolset': false, 'Payung': false,
-    'Uang': false, 'Kotak P3K': false, 'Segitiga Pengaman': false,
+    'STNK': false,
+    'Booklet': false,
+    'Toolset': false,
+    'Payung': false,
+    'Uang': false,
+    'Kotak P3K': false,
+    'Segitiga Pengaman': false,
   };
 
   // Step 3 Controllers
@@ -54,10 +63,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   @override
   void initState() {
     super.initState();
-    final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
-    if (vehicleTypeState is GetVehicleTypeInitial) {
-      context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
-    }
+    // Memanggil semua cubit yang dibutuhkan untuk mengambil data awal
+    context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
+    context.read<GetStallsCubit>().fetchStalls();
+    context.read<GetMechanicsCubit>().fetchMechanics();
 
     _initializeConditionValues();
   }
@@ -77,10 +86,20 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     };
 
     final bodyParts = [
-      'Kap Mesin', 'Atap Mobil', 'Bumper Depan', 'Bumper Belakang',
-      'Fender Depan Kanan', 'Fender Depan Kiri', 'Fender Belakang Kanan',
-      'Fender Belakang Kiri', 'Pintu Depan Kanan', 'Pintu Depan Kiri',
-      'Pintu Belakang Kanan', 'Pintu Belakang Kiri', 'Spion Kanan', 'Spion Kiri'
+      'Kap Mesin',
+      'Atap Mobil',
+      'Bumper Depan',
+      'Bumper Belakang',
+      'Fender Depan Kanan',
+      'Fender Depan Kiri',
+      'Fender Belakang Kanan',
+      'Fender Belakang Kiri',
+      'Pintu Depan Kanan',
+      'Pintu Depan Kiri',
+      'Pintu Belakang Kanan',
+      'Pintu Belakang Kiri',
+      'Spion Kanan',
+      'Spion Kiri'
     ];
 
     for (final part in bodyParts) {
@@ -104,7 +123,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _serviceTypeController.dispose();
     _notesController.dispose();
     _mechanicController.dispose();
-     _stallController.dispose(); 
+    _stallController.dispose();
     super.dispose();
   }
 
@@ -114,10 +133,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       listener: (context, state) {
         // Menghilangkan dialog loading jika ada
         if (state is! AddCustomerLoading) {
-           final isDialogShowing = ModalRoute.of(context)?.isCurrent != true;
-            if (isDialogShowing) {
-              Navigator.of(context).pop();
-            }
+          final isDialogShowing = ModalRoute.of(context)?.isCurrent != true;
+          if (isDialogShowing) {
+            Navigator.of(context).pop();
+          }
         }
 
         if (state is AddCustomerLoading) {
@@ -275,7 +294,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       case 0:
         return CustomerIdentityStep(
           formKey: _identityFormKey,
-          // Pass new controllers to the widget
           frameNumberController: _frameNumberController,
           nameController: _nameController,
           dobController: _dobController,
@@ -291,11 +309,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               _hasMToyotaApp = value ?? false;
             });
           },
-          // New callback to handle navigation to barcode scanner
           onScanBarcode: () async {
             final result = await Navigator.push<String>(
               context,
-              MaterialPageRoute(builder: (context) => const CustomBarcodeScreen()),
+              MaterialPageRoute(
+                  builder: (context) => const CustomBarcodeScreen()),
             );
             if (result != null) {
               setState(() {
@@ -321,19 +339,36 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           },
         );
       case 2:
-        return NotesAndOthersStep(
-          formKey: _notesFormKey,
-          serviceTypeController: _serviceTypeController,
-          notesController: _notesController,
-          mechanicController: _mechanicController,
-          isTradeIn: _isTradeIn,
-          stallController: _stallController,
-          onTradeInChanged: (value) {
-            setState(() {
-              _isTradeIn = value ?? false;
-            });
+           return BlocBuilder<GetStallsCubit, GetStallsState>(
+          builder: (context, stallState) {
+            return BlocBuilder<GetMechanicsCubit, GetMechanicsState>(
+              builder: (context, mechanicState) {
+                // Handle loading state
+                if (stallState is GetStallsLoading ||
+                    mechanicState is GetMechanicsLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+                return NotesAndOthersStep(
+                  formKey: _notesFormKey,
+                  serviceTypeController: _serviceTypeController,
+                  notesController: _notesController,
+                  mechanicController: _mechanicController,
+                  isTradeIn: _isTradeIn,
+                  stallController: _stallController,
+                  onTradeInChanged: (value) {
+                    setState(() {
+                      _isTradeIn = value ?? false;
+                    });
+                  },
+                  // Mengirim state langsung ke widget anak
+                  stallState: stallState,
+                  mechanicState: mechanicState,
+                );
+              },
+            );
           },
         );
+
       default:
         return Container();
     }
@@ -399,39 +434,35 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ),
     );
   }
+
   void _handleNextOrSubmit() {
     // Validasi step saat ini sebelum lanjut
     bool isStepValid = false;
     if (_currentStep == 0) {
       isStepValid = _identityFormKey.currentState?.validate() ?? false;
     } else if (_currentStep == 1) {
-      // Step 2 tidak memiliki form validation, dianggap selalu valid
-      // Jika ada validasi, tambahkan di sini. Contoh: _conditionFormKey.currentState?.validate()
-      isStepValid = true; 
+      isStepValid = true;
     } else if (_currentStep == 2) {
-       isStepValid = _notesFormKey.currentState?.validate() ?? false;
+      isStepValid = _notesFormKey.currentState?.validate() ?? false;
     }
 
     if (!isStepValid) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Harap isi semua data yang wajib diisi.'), backgroundColor: Colors.orange),
+        const SnackBar(
+            content: Text('Harap isi semua data yang wajib diisi.'),
+            backgroundColor: Colors.orange),
       );
-      return; // Hentikan proses jika validasi gagal
+      return;
     }
 
-    // Lanjutkan ke step berikutnya atau submit
     if (_currentStep < 2) {
       setState(() {
         _currentStep += 1;
       });
     } else {
-      // Sudah di step terakhir, tampilkan dialog konfirmasi
       _showConfirmationDialog();
     }
   }
-
- 
-
 
   void _showConfirmationDialog() {
     showDialog(
@@ -495,10 +526,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                       onPressed: () {
-            Navigator.pop(context); // Tutup dialog konfirmasi
-            _submitDataToApi(); // Panggil metode untuk submit ke API
-        },
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _submitDataToApi();
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
@@ -524,11 +555,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-
-   void _submitDataToApi() {
-    // --- MAPPING DATA SESUAI cURL ---
-
-    // 1. Luggage Items: Konversi bool ke 'Ya' atau 'Tidak'
+  void _submitDataToApi() {
     final luggageData = {
       'luggage_stnk': _carryItemValues['STNK']! ? 'Ya' : 'Tidak',
       'luggage_booklet': _carryItemValues['Booklet']! ? 'Ya' : 'Tidak',
@@ -536,10 +563,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'luggage_umbrella': _carryItemValues['Payung']! ? 'Ya' : 'Tidak',
       'luggage_money': _carryItemValues['Uang']! ? 'Ya' : 'Tidak',
       'luggage_p3k': _carryItemValues['Kotak P3K']! ? 'Ya' : 'Tidak',
-      'luggage_triangle_protection': _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
+      'luggage_triangle_protection':
+          _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
     };
 
-    // 2. Body Condition Items: Ganti key
     final bodyConditionData = <String, String>{};
     _conditionValues.forEach((key, value) {
       if (key.startsWith('body_')) {
@@ -548,21 +575,18 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       }
     });
 
-    // 3. Gabungkan semua data menjadi satu Map
     final Map<String, dynamic> customerData = {
-      // Step 1
       'chassisNumber': _frameNumberController.text,
       'name': _nameController.text,
       'birthDate': _dobController.text,
       'phone': _whatsappController.text,
       'plateNumber': _plateNumberController.text,
-      'typeId': _vehicleTypeController.text, // TODO: Kirim ID, bukan nama. Perlu mapping. Untuk sekarang, kirim nama.
+      'typeId': _vehicleTypeController
+          .text, 
       'year': _vehicleYearController.text,
       'insurance': _insuranceController.text,
       'mToyota': _hasMToyotaApp ? 'Ya' : 'Tidak',
-      'source': 'toyota', // Sesuai cURL
-
-      // Step 2
+      'source': 'toyota',
       'engineRoomCondition': _conditionValues['ruangMesin'],
       'baseCarpetCondition': _conditionValues['karpetDasar'],
       'driverCarpetCondition': _conditionValues['karpetPengemudi'],
@@ -575,20 +599,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'kilometer': _conditionValues['kilometer'],
       ...luggageData,
       ...bodyConditionData,
-
-      // Step 3
       'serviceType': _serviceTypeController.text,
       'note': _notesController.text.isNotEmpty ? _notesController.text : '-',
       'tradeIn': _isTradeIn ? 'Ya' : 'Tidak',
       'StallId': _stallController.text,
       'MechanicId': _mechanicController.text,
     };
-    
-    // Hapus nilai null atau kosong untuk menghindari error di server
+
     customerData.removeWhere((key, value) => value == null || value == '');
 
-    // Panggil Cubit untuk mengirim data
     context.read<AddCustomerCubit>().submitCustomerData(customerData);
   }
-
 }
