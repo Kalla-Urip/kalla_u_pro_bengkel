@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 
 class VehicleConditionStep extends StatefulWidget {
@@ -142,42 +143,21 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
           _buildSectionTitle('BBM & Kilometer'),
           _buildSectionContent(
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Total BBM (Persentase)', 
-                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        controller: _bbmController,
-                        hintText: '0',
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) => _updateCondition('bbm', value),
-                      ),
-                    ],
-                  ),
-                ),
+                Expanded(child: _buildValidatedTextField(
+                  controller: _bbmController,
+                  label: 'Total BBM (%)',
+                  hint: 'Contoh: 50',
+                  onChanged: (value) => _updateCondition('bbm', value),
+                )),
                 const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Kilometer', 
-                        style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                      ),
-                      const SizedBox(height: 8),
-                      _buildTextField(
-                        controller: _kilometerController,
-                        hintText: '0',
-                        keyboardType: TextInputType.number,
-                        onChanged: (value) => _updateCondition('kilometer', value),
-                      ),
-                    ],
-                  ),
-                ),
+                Expanded(child: _buildValidatedTextField(
+                  controller: _kilometerController,
+                  label: 'Kilometer',
+                  hint: 'Contoh: 15000',
+                  onChanged: (value) => _updateCondition('kilometer', value),
+                )),
               ],
             ),
           ),
@@ -439,6 +419,33 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
           ),
         );
       },
+    );
+  }
+
+   Widget _buildValidatedTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required ValueChanged<String> onChanged,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.grey[700])),
+        const SizedBox(height: 8),
+        TextFormField(
+          controller: controller,
+          onChanged: onChanged,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          validator: (value) => (value?.isEmpty ?? true) ? 'Wajib diisi' : null,
+          decoration: InputDecoration(
+            hintText: hint,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ],
     );
   }
 

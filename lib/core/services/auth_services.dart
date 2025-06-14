@@ -1,5 +1,5 @@
 // kalla_u_pro_bengkel/core/services/auth_services.dart
-import 'package:kalla_u_pro_bengkel/util/constants.dart';
+import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 class AuthService {
   final SharedPreferences _prefs;

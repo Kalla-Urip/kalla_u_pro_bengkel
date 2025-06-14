@@ -5,7 +5,7 @@ import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
-import 'package:kalla_u_pro_bengkel/util/utils.dart';
+import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

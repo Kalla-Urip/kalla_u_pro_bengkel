@@ -1,10 +1,11 @@
 // kalla_u_pro_bengkel/core/utils/constants.dart
 class ApiConstants {
-  static const String baseUrl = 'http://141.11.25.72:5000/mobile';
-  static const String loginEndpoint = '/mechanic/auth/login';
+  static const String baseUrl = 'http://141.11.25.72:5000/mobile/mechanic';
+  static const String loginEndpoint = '/auth/login';
 
   // Home
-   static const String vehicleTypeEndpoint = '/mechanic/vehicle-type';
+   static const String vehicleTypeEndpoint = '/vehicle-type';
+   static const String addCustomerEndpoint = '/customer';
 }
 
 class PrefKeys {

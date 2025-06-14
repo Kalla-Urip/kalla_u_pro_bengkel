@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/custom_barode_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
@@ -19,45 +20,35 @@ class AddCustomerScreen extends StatefulWidget {
 }
 
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
-  // Current step index
-  int _currentStep = 0;
-
-  // Form keys for each step
+   int _currentStep = 0;
   final _identityFormKey = GlobalKey<FormState>();
   final _conditionFormKey = GlobalKey<FormState>();
   final _notesFormKey = GlobalKey<FormState>();
 
-  // --- NEW CONTROLLERS (as per request) ---
+  // Step 1 Controllers
   final _frameNumberController = TextEditingController();
   final _nameController = TextEditingController();
   final _dobController = TextEditingController();
   final _whatsappController = TextEditingController();
-  // --- END OF NEW CONTROLLERS ---
-
-  // Controllers and data for customer identity (Step 1)
   final _plateNumberController = TextEditingController();
   final _vehicleTypeController = TextEditingController();
   final _vehicleYearController = TextEditingController();
   final _addressController = TextEditingController();
   final _insuranceController = TextEditingController();
-  bool _hasMToyotaApp = false;
+  bool _hasMToyotaApp = true; // Default value
 
-  // Data for vehicle condition (Step 2)
+  // Step 2 Data
   Map<String, String> _conditionValues = {};
   Map<String, bool> _carryItemValues = {
-    'STNK': false,
-    'Booklet': false,
-    'Toolset': false,
-    'Payung': false,
-    'Uang': false,
-    'Kotak P3K': false,
-    'Segitiga Pengaman': false,
+    'STNK': false, 'Booklet': false, 'Toolset': false, 'Payung': false,
+    'Uang': false, 'Kotak P3K': false, 'Segitiga Pengaman': false,
   };
 
-  // Controllers and data for notes and others (Step 3)
+  // Step 3 Controllers
   final _serviceTypeController = TextEditingController();
   final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
+  final _stallController = TextEditingController(); // Controller baru untuk Stall
   bool _isTradeIn = false;
 
   @override
@@ -113,37 +104,72 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _serviceTypeController.dispose();
     _notesController.dispose();
     _mechanicController.dispose();
+     _stallController.dispose(); 
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: AppColors.primary,
-        leadingWidth: 21,
-        title: const Text('Tambah Customer', style: AppTextStyles.subtitle2),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            if (_currentStep > 0) {
-              setState(() {
-                _currentStep -= 1;
-              });
-            } else {
-              context.pop();
+    return BlocListener<AddCustomerCubit, AddCustomerState>(
+      listener: (context, state) {
+        // Menghilangkan dialog loading jika ada
+        if (state is! AddCustomerLoading) {
+           final isDialogShowing = ModalRoute.of(context)?.isCurrent != true;
+            if (isDialogShowing) {
+              Navigator.of(context).pop();
             }
-          },
+        }
+
+        if (state is AddCustomerLoading) {
+          // Tampilkan dialog loading
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (context) => const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          );
+        } else if (state is AddCustomerSuccess) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(const SnackBar(
+              content: Text('Data customer berhasil disimpan!'),
+              backgroundColor: Colors.green,
+            ));
+          context.pop(); // Kembali ke halaman sebelumnya setelah sukses
+        } else if (state is AddCustomerFailure) {
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+              content: Text('Gagal: ${state.message}'),
+              backgroundColor: Colors.red,
+            ));
+        }
+      },
+      child: Scaffold(
+        appBar: AppBar(
+          backgroundColor: AppColors.primary,
+          leadingWidth: 21,
+          title: const Text('Tambah Customer', style: AppTextStyles.subtitle2),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () {
+              if (_currentStep > 0) {
+                setState(() => _currentStep -= 1);
+              } else {
+                context.pop();
+              }
+            },
+          ),
         ),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildStepperHeader(),
-            Expanded(child: _buildStepContent()),
-            
-            _buildBottomButtons(),
-          ],
+        body: SafeArea(
+          child: Column(
+            children: [
+              _buildStepperHeader(),
+              Expanded(child: _buildStepContent()),
+              _buildBottomButtons(),
+            ],
+          ),
         ),
       ),
     );
@@ -301,6 +327,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           notesController: _notesController,
           mechanicController: _mechanicController,
           isTradeIn: _isTradeIn,
+          stallController: _stallController,
           onTradeInChanged: (value) {
             setState(() {
               _isTradeIn = value ?? false;
@@ -351,7 +378,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           if (_currentStep > 0) const SizedBox(width: 16),
           Expanded(
             child: ElevatedButton(
-              onPressed: _handleNextStep,
+              onPressed: _handleNextOrSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 shape: RoundedRectangleBorder(
@@ -372,18 +399,41 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       ),
     );
   }
+  void _handleNextOrSubmit() {
+    // Validasi step saat ini sebelum lanjut
+    bool isStepValid = false;
+    if (_currentStep == 0) {
+      isStepValid = _identityFormKey.currentState?.validate() ?? false;
+    } else if (_currentStep == 1) {
+      // Step 2 tidak memiliki form validation, dianggap selalu valid
+      // Jika ada validasi, tambahkan di sini. Contoh: _conditionFormKey.currentState?.validate()
+      isStepValid = true; 
+    } else if (_currentStep == 2) {
+       isStepValid = _notesFormKey.currentState?.validate() ?? false;
+    }
 
-  void _handleNextStep() {
+    if (!isStepValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Harap isi semua data yang wajib diisi.'), backgroundColor: Colors.orange),
+      );
+      return; // Hentikan proses jika validasi gagal
+    }
+
+    // Lanjutkan ke step berikutnya atau submit
     if (_currentStep < 2) {
       setState(() {
         _currentStep += 1;
       });
     } else {
-      _submitForm();
+      // Sudah di step terakhir, tampilkan dialog konfirmasi
+      _showConfirmationDialog();
     }
   }
 
-  void _submitForm() {
+ 
+
+
+  void _showConfirmationDialog() {
     showDialog(
       context: context,
       builder: (context) => Dialog(
@@ -445,11 +495,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                        _saveCustomerData();
-                        context.pop();
-                      },
+                       onPressed: () {
+            Navigator.pop(context); // Tutup dialog konfirmasi
+            _submitDataToApi(); // Panggil metode untuk submit ke API
+        },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         shape: RoundedRectangleBorder(
@@ -475,32 +524,71 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  void _saveCustomerData() {
-    final customerData = {
-      // Step 1: Customer Identity (with new fields)
-      'frameNumber': _frameNumberController.text,
-      'name': _nameController.text,
-      'dob': _dobController.text,
-      'whatsapp': _whatsappController.text,
-      'plateNumber': _plateNumberController.text,
-      'vehicleType': _vehicleTypeController.text,
-      'vehicleYear': _vehicleYearController.text,
-      'address': _addressController.text,
-      'insurance': _insuranceController.text,
-      'hasMToyotaApp': _hasMToyotaApp,
 
-      // Step 2: Vehicle Condition
-      'conditionValues': _conditionValues,
-      'carryItemValues': _carryItemValues,
+   void _submitDataToApi() {
+    // --- MAPPING DATA SESUAI cURL ---
 
-      // Step 3: Notes and Others
-      'serviceType': _serviceTypeController.text,
-      'notes': _notesController.text,
-      'mechanic': _mechanicController.text,
-      'isTradeIn': _isTradeIn,
+    // 1. Luggage Items: Konversi bool ke 'Ya' atau 'Tidak'
+    final luggageData = {
+      'luggage_stnk': _carryItemValues['STNK']! ? 'Ya' : 'Tidak',
+      'luggage_booklet': _carryItemValues['Booklet']! ? 'Ya' : 'Tidak',
+      'luggage_toolset': _carryItemValues['Toolset']! ? 'Ya' : 'Tidak',
+      'luggage_umbrella': _carryItemValues['Payung']! ? 'Ya' : 'Tidak',
+      'luggage_money': _carryItemValues['Uang']! ? 'Ya' : 'Tidak',
+      'luggage_p3k': _carryItemValues['Kotak P3K']! ? 'Ya' : 'Tidak',
+      'luggage_triangle_protection': _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
     };
 
-    // TODO: Implement the actual saving logic
-    print('Saving customer data: $customerData');
+    // 2. Body Condition Items: Ganti key
+    final bodyConditionData = <String, String>{};
+    _conditionValues.forEach((key, value) {
+      if (key.startsWith('body_')) {
+        final newKey = 'bodyCondition_${key.substring(5)}';
+        bodyConditionData[newKey] = value;
+      }
+    });
+
+    // 3. Gabungkan semua data menjadi satu Map
+    final Map<String, dynamic> customerData = {
+      // Step 1
+      'chassisNumber': _frameNumberController.text,
+      'name': _nameController.text,
+      'birthDate': _dobController.text,
+      'phone': _whatsappController.text,
+      'plateNumber': _plateNumberController.text,
+      'typeId': _vehicleTypeController.text, // TODO: Kirim ID, bukan nama. Perlu mapping. Untuk sekarang, kirim nama.
+      'year': _vehicleYearController.text,
+      'insurance': _insuranceController.text,
+      'mToyota': _hasMToyotaApp ? 'Ya' : 'Tidak',
+      'source': 'toyota', // Sesuai cURL
+
+      // Step 2
+      'engineRoomCondition': _conditionValues['ruangMesin'],
+      'baseCarpetCondition': _conditionValues['karpetDasar'],
+      'driverCarpetCondition': _conditionValues['karpetPengemudi'],
+      'fr_rh': _conditionValues['banFRRH'],
+      'fr_lh': _conditionValues['banFRLH'],
+      'rr_rh': _conditionValues['banRRRH'],
+      'rr_lh': _conditionValues['banRRLH'],
+      'batteraiCondition': _conditionValues['baterai'],
+      'fuelTotal': _conditionValues['bbm'],
+      'kilometer': _conditionValues['kilometer'],
+      ...luggageData,
+      ...bodyConditionData,
+
+      // Step 3
+      'serviceType': _serviceTypeController.text,
+      'note': _notesController.text.isNotEmpty ? _notesController.text : '-',
+      'tradeIn': _isTradeIn ? 'Ya' : 'Tidak',
+      'StallId': _stallController.text,
+      'MechanicId': _mechanicController.text,
+    };
+    
+    // Hapus nilai null atau kosong untuk menghindari error di server
+    customerData.removeWhere((key, value) => value == null || value == '');
+
+    // Panggil Cubit untuk mengirim data
+    context.read<AddCustomerCubit>().submitCustomerData(customerData);
   }
+
 }

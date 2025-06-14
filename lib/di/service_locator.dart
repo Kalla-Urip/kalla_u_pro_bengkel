@@ -8,13 +8,15 @@ import 'package:kalla_u_pro_bengkel/core/error/error_interceptor.dart';
 import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
+import 'package:kalla_u_pro_bengkel/core/util/request_handler.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/repositories/auth_repositories.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
-import 'package:kalla_u_pro_bengkel/util/constants.dart';
+import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 final GetIt locator = GetIt.instance;
@@ -97,10 +99,12 @@ Future<void> setupServiceLocator() async {
     }
     return dio;
   });
+  
+ locator.registerLazySingleton<RequestHandler>(() => RequestHandler(networkInfo: locator()));
 
-  // Core
   locator.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(locator()));
    locator.registerLazySingleton<FcmService>(() => FcmService()); // Daftarkan FcmService
+  // Core
 
 
   // Features - Auth
@@ -113,9 +117,11 @@ Future<void> setupServiceLocator() async {
   locator.registerLazySingleton<AuthRepository>(
     () => AuthRepositoryImpl(
       remoteDataSource: locator(),
-      networkInfo: locator(),
+      // Inject RequestHandler, bukan lagi networkInfo
+      requestHandler: locator<RequestHandler>(),
     ),
   );
+
 
   // Cubits
   locator.registerFactory(
@@ -136,12 +142,16 @@ Future<void> setupServiceLocator() async {
   locator.registerLazySingleton<HomeRepository>(
     () => HomeRepositoryImpl(
       remoteDataSource: locator(),
-      networkInfo: locator(),
+      requestHandler: locator(),
     ),
   );
 
   // Cubits
   locator.registerFactory(
     () => GetVehicleTypeCubit(homeRepository: locator()),
+  );
+
+  locator.registerFactory(
+    () => AddCustomerCubit(homeRepository: locator()),
   );
 }

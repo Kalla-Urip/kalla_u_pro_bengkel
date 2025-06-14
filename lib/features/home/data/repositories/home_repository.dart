@@ -1,42 +1,34 @@
 import 'package:dartz/dartz.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
-import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
 import 'package:kalla_u_pro_bengkel/core/error/failures.dart';
-import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
+import 'package:kalla_u_pro_bengkel/core/util/request_handler.dart';
+// Impor RequestHandler yang baru dibuat
 import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 
 abstract class HomeRepository {
   Future<Either<Failure, List<VehicleTypeModel>>> getVehicleTypes();
+  Future<Either<Failure, void>> addCustomer(Map<String, dynamic> data);
 }
 
 class HomeRepositoryImpl implements HomeRepository {
   final HomeRemoteDataSource remoteDataSource;
-  final NetworkInfo networkInfo;
+  // Hapus NetworkInfo, ganti dengan RequestHandler
+  final RequestHandler requestHandler;
 
   HomeRepositoryImpl({
     required this.remoteDataSource,
-    required this.networkInfo,
+    required this.requestHandler, // Inject RequestHandler
   });
 
   @override
   Future<Either<Failure, List<VehicleTypeModel>>> getVehicleTypes() async {
-    if (await networkInfo.isConnected()) {
-      try {
-        final vehicleTypes = await remoteDataSource.getVehicleTypes();
-        return Right(vehicleTypes);
-      } on GeneralException catch (e) {
-        // Endpoint ini mungkin juga butuh otentikasi, jadi tangani GeneralException
-        return Left(AuthenticationFailure(e.message ?? 'Akses ditolak', errorCode: e.errorCode, statusCode: e.statusCode));
-      } on ServerException catch (e) {
-        return Left(ServerFailure(e.message ?? 'Kesalahan server', errorCode: e.errorCode, statusCode: e.statusCode));
-      } on NoInternetException catch (e) {
-        return Left(NetworkFailure(e.message ?? 'Tidak ada koneksi', errorCode: e.errorCode));
-      } catch (e) {
-        return Left(UnknownFailure('Terjadi kesalahan yang tidak diketahui: ${e.toString()}'));
-      }
-    } else {
-      return const Left(NetworkFailure('Tidak ada koneksi internet.', errorCode: ErrorCode.noInternet));
-    }
+    // Cukup panggil handleRequest dan berikan fungsi pemanggilan data source
+    return requestHandler.handleRequest(() => remoteDataSource.getVehicleTypes());
+  }
+
+  @override
+  Future<Either<Failure, void>> addCustomer(Map<String, dynamic> data) async {
+    // Logikanya sama untuk semua metode
+    return requestHandler.handleRequest(() => remoteDataSource.addCustomer(data));
   }
 }

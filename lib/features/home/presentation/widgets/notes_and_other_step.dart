@@ -3,10 +3,11 @@ import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
 class NotesAndOthersStep extends StatelessWidget {
-  final GlobalKey<FormState> formKey;
+final GlobalKey<FormState> formKey;
   final TextEditingController serviceTypeController;
   final TextEditingController notesController;
   final TextEditingController mechanicController;
+  final TextEditingController stallController;
   final bool isTradeIn;
   final ValueChanged<bool?> onTradeInChanged;
 
@@ -16,17 +17,21 @@ class NotesAndOthersStep extends StatelessWidget {
     required this.serviceTypeController,
     required this.notesController,
     required this.mechanicController,
+    required this.stallController,
     required this.isTradeIn,
     required this.onTradeInChanged,
   });
 
   @override
   Widget build(BuildContext context) {
-    // Sample service types
-    final serviceTypes = ['Tune Up', 'Ganti Oli', 'Pemeriksaan Rutin', 'Perbaikan AC', 'Ganti Ban', 'Lainnya'];
-    
-    // Sample mechanics
-    final mechanics = ['Muh Rifqy', 'Ahmad Dahlan', 'Budi Santoso', 'Deni Kurniawan', 'Eko Prasetyo'];
+final serviceTypes = {
+      'Tune Up': 'Tune Up',
+      'Ganti Oli': 'Ganti Oli',
+      'Pemeriksaan Rutin': 'Pemeriksaan Rutin',
+      'Perbaikan AC': 'Perbaikan AC',
+      'Lainnya': 'Lainnya'
+    };    final Map<String, String> mechanics = {'Muh Rifqy': '3'}; // Tampilan Nama : ID
+    final Map<String, String> stalls = {'Stall A': '1'};     // Tampilan Nama : ID
 
     return Form(
       key: formKey,
@@ -40,12 +45,7 @@ class NotesAndOthersStep extends StatelessWidget {
             controller: serviceTypeController,
             hintText: 'Pilih jenis service',
             items: serviceTypes,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Jenis service wajib dipilih';
-              }
-              return null;
-            },
+            validator: (value) => (value?.isEmpty ?? true) ? 'Jenis service wajib dipilih' : null,
           ),
           const SizedBox(height: 24),
 
@@ -53,33 +53,37 @@ class NotesAndOthersStep extends StatelessWidget {
           _buildSectionTitle('Catatan'),
           CustomTextField(
             controller: notesController,
-            hintText: 'Masukkan catatan tambahan',
+            hintText: 'Masukkan catatan tambahan (opsional)',
             maxLines: 3,
-            validator: (value) => null, // Optional field
+            validator: (value) => null, // Opsional
           ),
           const SizedBox(height: 24),
 
           // Petugas Bengkel
-          _buildSectionTitle('Petugas Bengkel'),
+          _buildSectionTitle('Petugas Bengkel (Mekanik)'),
           CustomDropdown(
-            controller: mechanicController,
+            controller: mechanicController, // Controller untuk ID
             hintText: 'Pilih petugas bengkel',
             items: mechanics,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Petugas bengkel wajib dipilih';
-              }
-              return null;
-            },
+            validator: (value) => (value?.isEmpty ?? true) ? 'Petugas bengkel wajib dipilih' : null,
+            // onChanged tidak lagi diperlukan di sini karena widget sudah menanganinya
+          ),
+          const SizedBox(height: 24),
+
+          // Stall
+          _buildSectionTitle('Stall'),
+          CustomDropdown(
+            controller: stallController, // Controller untuk ID
+            hintText: 'Pilih stall',
+            items: stalls,
+            validator: (value) => (value?.isEmpty ?? true) ? 'Stall wajib dipilih' : null,
           ),
           const SizedBox(height: 24),
 
           // Trade In
           _buildSectionTitle('Trade In'),
           _buildTradeInOptions(),
-          // If trade-in is selected, show additional info
-          if (isTradeIn) 
-            _buildTradeInInfoBox(),
+          if (isTradeIn) _buildTradeInInfoBox(),
           const SizedBox(height: 40),
         ],
       ),

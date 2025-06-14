@@ -10,7 +10,7 @@ import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
 import 'package:kalla_u_pro_bengkel/di/service_locator.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
-import 'package:kalla_u_pro_bengkel/util/utils.dart';
+import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 
+
 class CustomDropdown extends StatefulWidget {
-  final TextEditingController controller;
+  final TextEditingController controller; // Controller ini akan menyimpan ID
   final String hintText;
-  final List<String> items;
+  final Map<String, String> items; // Diubah menjadi Map<Nama, ID>
   final String? Function(String?)? validator;
+  final Function(String displayName, String id)? onChanged; // Callback dengan nama dan ID
 
   const CustomDropdown({
     super.key,
@@ -13,6 +15,7 @@ class CustomDropdown extends StatefulWidget {
     required this.hintText,
     required this.items,
     this.validator,
+    this.onChanged,
   });
 
   @override
@@ -20,13 +23,28 @@ class CustomDropdown extends StatefulWidget {
 }
 
 class _CustomDropdownState extends State<CustomDropdown> {
+  String? _selectedDisplayName;
   bool _isExpanded = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Inisialisasi tampilan awal jika controller sudah punya nilai (ID)
+    if (widget.controller.text.isNotEmpty) {
+      widget.items.forEach((key, value) {
+        if (value == widget.controller.text) {
+          _selectedDisplayName = key;
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // The field that looks like a TextField
+        // Widget yang terlihat seperti TextField
         GestureDetector(
           onTap: () {
             FocusScope.of(context).unfocus();
@@ -44,10 +62,10 @@ class _CustomDropdownState extends State<CustomDropdown> {
               children: [
                 Expanded(
                   child: Text(
-                    widget.controller.text.isNotEmpty ? widget.controller.text : widget.hintText,
+                    _selectedDisplayName ?? widget.hintText,
                     style: TextStyle(
                       fontSize: 14,
-                      color: widget.controller.text.isNotEmpty ? Colors.black : Colors.grey.shade400,
+                      color: _selectedDisplayName != null ? Colors.black : Colors.grey.shade400,
                     ),
                   ),
                 ),
@@ -60,31 +78,34 @@ class _CustomDropdownState extends State<CustomDropdown> {
           ),
         ),
         
-        // Field validation error message
-        if (widget.validator != null)
-          FormField<String>(
-            initialValue: widget.controller.text,
-            validator: widget.validator,
-            builder: (FormFieldState<String> state) {
-              return state.hasError
-                  ? Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 16, top: 4),
-                        child: Text(
-                          state.errorText!,
-                          style: const TextStyle(
-                            color: Colors.red,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ),
-                    )
-                  : const SizedBox.shrink();
-            },
-          ),
+        // Wrapper FormField tak terlihat untuk validasi
+        // Ini memastikan pesan error dari validator bisa ditampilkan
+        FormField<String>(
+          initialValue: widget.controller.text,
+          validator: widget.validator,
+          builder: (state) {
+            // Kita perlu update state FormField saat nilai berubah
+            // agar validasi berjalan dengan benar.
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (state.value != widget.controller.text) {
+                state.didChange(widget.controller.text);
+              }
+            });
+            
+            if (state.hasError) {
+              return Padding(
+                padding: const EdgeInsets.only(left: 16, top: 4),
+                child: Text(
+                  state.errorText!,
+                  style: const TextStyle(color: Colors.red, fontSize: 12),
+                ),
+              );
+            }
+            return const SizedBox.shrink();
+          },
+        ),
         
-        // Dropdown overlay
+        // Daftar item dropdown yang muncul
         if (_isExpanded)
           Container(
             margin: const EdgeInsets.only(top: 4),
@@ -100,36 +121,33 @@ class _CustomDropdownState extends State<CustomDropdown> {
                 ),
               ],
             ),
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.25,
-            ),
+            constraints: BoxConstraints(maxHeight: 200),
             child: ListView.builder(
               shrinkWrap: true,
               padding: EdgeInsets.zero,
               itemCount: widget.items.length,
               itemBuilder: (context, index) {
-                final item = widget.items[index];
-                final isSelected = widget.controller.text == item;
+                final displayName = widget.items.keys.elementAt(index);
+                final id = widget.items.values.elementAt(index);
+                final isSelected = widget.controller.text == id;
+
                 return InkWell(
                   onTap: () {
                     setState(() {
-                      widget.controller.text = item;
+                      widget.controller.text = id; // Simpan ID di controller
+                      _selectedDisplayName = displayName; // Simpan nama untuk tampilan
                       _isExpanded = false;
                     });
+                    // Panggil callback jika ada
+                    widget.onChanged?.call(displayName, id);
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
-                      border: index < widget.items.length - 1 
-                          ? Border(bottom: BorderSide(color: Colors.grey.shade200))
-                          : null,
-                    ),
+                    color: isSelected ? AppColors.primary.withOpacity(0.1) : Colors.transparent,
                     child: Text(
-                      item,
+                      displayName,
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                         color: isSelected ? AppColors.primary : Colors.black,
                       ),
                     ),

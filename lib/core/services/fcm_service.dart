@@ -11,7 +11,7 @@ import 'package:go_router/go_router.dart'; // Jika Anda menggunakan GoRouter unt
 
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart'; // Untuk cek status login
 import 'package:kalla_u_pro_bengkel/di/service_locator.dart';
-import 'package:kalla_u_pro_bengkel/util/constants.dart'; // Untuk ApiConstants
+import 'package:kalla_u_pro_bengkel/core/util/constants.dart'; // Untuk ApiConstants
 
 class FcmService {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
@@ -20,6 +20,7 @@ class FcmService {
 
   // (Opsional) Jika Anda ingin kustomisasi notifikasi foreground di Android
   // final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
 
   Future<void> initialize(BuildContext navigatorContext) async {
     // --- 1. Minta Izin Notifikasi ---

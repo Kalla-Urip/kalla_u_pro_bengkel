@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
 import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/models/login_response_model.dart';
-import 'package:kalla_u_pro_bengkel/util/constants.dart';
+import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 
 abstract class AuthRemoteDataSource {
   Future<LoginResponseModel> login(String nik, String password);

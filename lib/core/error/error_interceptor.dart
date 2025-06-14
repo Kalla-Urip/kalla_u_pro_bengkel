@@ -5,6 +5,7 @@ import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
 
 class ErrorInterceptor extends Interceptor {
   @override
+
   void onError(DioException err, ErrorInterceptorHandler handler) {
     // Panggil handler.next(err) untuk melanjutkan rantai error.
     // Di sini kita akan membuat exception kustom berdasarkan tipe error Dio.
