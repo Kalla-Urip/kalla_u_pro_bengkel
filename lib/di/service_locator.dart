@@ -16,6 +16,7 @@ import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_d
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
@@ -33,7 +34,8 @@ Future<void> setupServiceLocator() async {
   // Pastikan ini terdaftar SEBELUM Dio jika Dio bergantung padanya secara langsung saat pembuatan.
   // Dalam kasus interceptor yang mengambilnya dari locator, urutan tidak terlalu kritis selama keduanya lazy singletons.
   if (!locator.isRegistered<AuthService>()) {
-    locator.registerLazySingleton<AuthService>(() => AuthService(locator<SharedPreferences>()));
+    locator.registerLazySingleton<AuthService>(
+        () => AuthService(locator<SharedPreferences>()));
   }
 
   // Dio (dengan konfigurasi terpusat)
@@ -42,16 +44,18 @@ Future<void> setupServiceLocator() async {
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         connectTimeout: const Duration(seconds: 15), // Contoh timeout koneksi
-        receiveTimeout: const Duration(seconds: 15), // Contoh timeout menerima data
-        sendTimeout: const Duration(seconds: 15),    // Contoh timeout mengirim data
+        receiveTimeout:
+            const Duration(seconds: 15), // Contoh timeout menerima data
+        sendTimeout:
+            const Duration(seconds: 15), // Contoh timeout mengirim data
         headers: {
           'Accept': 'application/json', // Contoh header default
           // 'Content-Type': 'application/json', // Default Content-Type jika kebanyakan endpoint Anda JSON
-                                              // Jika tidak, set per request atau di interceptor jika logikanya kompleks
+          // Jika tidak, set per request atau di interceptor jika logikanya kompleks
         },
       ),
     );
-    dio.interceptors.add(ErrorInterceptor()); 
+    dio.interceptors.add(ErrorInterceptor());
 
     // Interceptor untuk menambahkan token otentikasi
     dio.interceptors.add(
@@ -87,7 +91,8 @@ Future<void> setupServiceLocator() async {
     );
 
     // Interceptor untuk logging (berguna saat development)
-    if (kDebugMode) { // Hanya aktifkan pada mode debug
+    if (kDebugMode) {
+      // Hanya aktifkan pada mode debug
       dio.interceptors.add(LogInterceptor(
         requestBody: true,
         responseBody: true,
@@ -102,17 +107,19 @@ Future<void> setupServiceLocator() async {
     return dio;
   });
 
- locator.registerLazySingleton<RequestHandler>(() => RequestHandler(networkInfo: locator()));
+  locator.registerLazySingleton<RequestHandler>(
+      () => RequestHandler(networkInfo: locator()));
 
   locator.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(locator()));
-   locator.registerLazySingleton<FcmService>(() => FcmService()); // Daftarkan FcmService
+  locator.registerLazySingleton<FcmService>(
+      () => FcmService()); // Daftarkan FcmService
   // Core
-
 
   // Features - Auth
   // Data sources
   locator.registerLazySingleton<AuthRemoteDataSource>(
-    () => AuthRemoteDataSourceImpl(client: locator()), // Dio sudah terkonfigurasi
+    () =>
+        AuthRemoteDataSourceImpl(client: locator()), // Dio sudah terkonfigurasi
   );
 
   // Repositories
@@ -124,14 +131,12 @@ Future<void> setupServiceLocator() async {
     ),
   );
 
-
   // Cubits
   locator.registerFactory(
     () => LoginCubit(
-      authRepository: locator(),
-      authService: locator(),
-      fcmService: locator()
-    ),
+        authRepository: locator(),
+        authService: locator(),
+        fcmService: locator()),
   );
 
   // Features - Home
@@ -158,9 +163,14 @@ Future<void> setupServiceLocator() async {
   );
 
   locator.registerFactory(
-  () => GetStallsCubit(homeRepository: locator()),
-);
-locator.registerFactory(
-  () => GetMechanicsCubit(homeRepository: locator()),
-);
+    () => GetStallsCubit(homeRepository: locator()),
+  );
+  locator.registerFactory(
+    () => GetMechanicsCubit(homeRepository: locator()),
+  );
+
+  locator.registerFactory(
+    // Register new cubit
+    () => GetServiceDataCubit(homeRepository: locator()),
+  );
 }

@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
 import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
@@ -11,12 +12,33 @@ abstract class HomeRemoteDataSource {
   Future<void> addCustomer(Map<String, dynamic> data);
   Future<List<StallModel>> getStalls();
   Future<List<MechanicModel>> getMechanics();
+  Future<List<ServiceDataModel>> getServiceData();
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final Dio client;
 
   HomeRemoteDataSourceImpl({required this.client});
+
+  @override
+  Future<List<ServiceDataModel>> getServiceData() async {
+    const url = ApiConstants.serviceData;
+
+    try {
+      final response = await client.get(url);
+      final serviceDataResponse = ServiceDataResponseModel.fromJson(response.data);
+      // Return an empty list if data is null for safety
+      return serviceDataResponse.data ?? []; 
+    } on DioException {
+      rethrow;
+    } catch (e) {
+      throw ServerException(
+        requestOptions: RequestOptions(path: url),
+        message: 'Gagal memproses data layanan: ${e.toString()}',
+        errorCode: ErrorCode.invalidResponse,
+      );
+    }
+  }
 
   @override
   Future<List<StallModel>> getStalls() async {

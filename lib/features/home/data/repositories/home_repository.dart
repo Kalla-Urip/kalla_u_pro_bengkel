@@ -4,6 +4,7 @@ import 'package:kalla_u_pro_bengkel/core/util/request_handler.dart';
 // Impor RequestHandler yang baru dibuat
 import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 
@@ -12,6 +13,7 @@ abstract class HomeRepository {
   Future<Either<Failure, void>> addCustomer(Map<String, dynamic> data);
   Future<Either<Failure, List<StallModel>>> getStalls();
   Future<Either<Failure, List<MechanicModel>>> getMechanics();
+   Future<Either<Failure, List<ServiceDataModel>>> getServiceData();
 }
 
 class HomeRepositoryImpl implements HomeRepository {
@@ -23,6 +25,11 @@ class HomeRepositoryImpl implements HomeRepository {
     required this.remoteDataSource,
     required this.requestHandler, // Inject RequestHandler
   });
+
+  @override
+  Future<Either<Failure, List<ServiceDataModel>>> getServiceData() async {
+    return requestHandler.handleRequest(() => remoteDataSource.getServiceData());
+  }
 
     @override
   Future<Either<Failure, List<StallModel>>> getStalls() async {

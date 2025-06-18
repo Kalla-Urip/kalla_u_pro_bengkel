@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 cursorColor: AppColors.primary,
                                 decoration: const InputDecoration(
                                     hintText: 'Masukkan NIK Karyawan'),
-                                keyboardType: TextInputType.number,
+                                keyboardType: TextInputType.text,
                                 validator: (value) {
                                   if (value == null || value.isEmpty)
                                     return 'NIK tidak boleh kosong';

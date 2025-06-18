@@ -19,6 +19,8 @@ class ImageResources {
 	static const String patternSvg = "assets/images/pattern_spash_screen.svg";
 	static const String patternPng = "assets/images/pattern_splash_screen.png";
   static const String icBarcode = 'assets/icons/ic_barcode.svg';
+  static const String errorIcon = "assets/images/empty_icon.png";
+
 	
 
 }

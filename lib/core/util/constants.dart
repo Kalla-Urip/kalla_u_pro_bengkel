@@ -8,6 +8,7 @@ class ApiConstants {
    static const String addCustomerEndpoint = '/customer';
    static const String mechanicEndpoint = '/mechanic';
    static const String stallEndPoint = '/stall';
+   static const String serviceData = '/service-data';
 }
 
 class PrefKeys {
