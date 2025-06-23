@@ -4,7 +4,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // Untuk kDebugMode
 import 'package:get_it/get_it.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_interceptor.dart';
 import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
@@ -23,158 +22,63 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_
 import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+
 final GetIt locator = GetIt.instance;
 
 Future<void> setupServiceLocator() async {
-  // External
   final sharedPreferences = await SharedPreferences.getInstance();
   locator.registerSingleton<SharedPreferences>(sharedPreferences);
   locator.registerLazySingleton<Connectivity>(() => Connectivity());
+  locator.registerLazySingleton<AuthService>(() => AuthService(locator<SharedPreferences>()));
+  locator.registerLazySingleton<FcmService>(() => FcmService());
 
-  // AuthService (Penting untuk diakses oleh interceptor Dio)
-  // Pastikan ini terdaftar SEBELUM Dio jika Dio bergantung padanya secara langsung saat pembuatan.
-  // Dalam kasus interceptor yang mengambilnya dari locator, urutan tidak terlalu kritis selama keduanya lazy singletons.
-  if (!locator.isRegistered<AuthService>()) {
-    locator.registerLazySingleton<AuthService>(
-        () => AuthService(locator<SharedPreferences>()));
-  }
-
-  // Dio (dengan konfigurasi terpusat)
   locator.registerLazySingleton<Dio>(() {
     final dio = Dio(
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
-        connectTimeout: const Duration(seconds: 15), // Contoh timeout koneksi
-        receiveTimeout:
-            const Duration(seconds: 15), // Contoh timeout menerima data
-        sendTimeout:
-            const Duration(seconds: 15), // Contoh timeout mengirim data
-        headers: {
-          'Accept': 'application/json', // Contoh header default
-          // 'Content-Type': 'application/json', // Default Content-Type jika kebanyakan endpoint Anda JSON
-          // Jika tidak, set per request atau di interceptor jika logikanya kompleks
-        },
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 15),
+        sendTimeout: const Duration(seconds: 15),
+        headers: {'Accept': 'application/json'},
       ),
     );
-    dio.interceptors.add(ErrorInterceptor());
+    
+    dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        final authService = locator<AuthService>();
+        final token = await authService.getAccessToken();
+        if (token != null && token.isNotEmpty) {
+          options.headers['Authorization'] = 'Bearer $token';
+        }
+        return handler.next(options);
+      },
+    ));
 
-    // Interceptor untuk menambahkan token otentikasi
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) async {
-          // Ambil token dari AuthService
-          final authService = locator<AuthService>();
-          final token = await authService.getAccessToken();
-
-          if (token != null && token.isNotEmpty) {
-            options.headers['Authorization'] = 'Bearer $token';
-          }
-          return handler.next(options); // Lanjutkan request
-        },
-        onResponse: (response, handler) {
-          // Anda bisa melakukan sesuatu dengan response di sini
-          return handler.next(response); // Lanjutkan
-        },
-        onError: (DioException e, handler) async {
-          // Anda bisa menangani error global di sini, misalnya token expired -> refresh token
-          // Contoh sederhana:
-          if (e.response?.statusCode == 401) {
-            // Token mungkin expired atau tidak valid
-            // Anda bisa implementasikan logic refresh token di sini atau logout pengguna
-            // Misalnya, panggil authService.logout() dan navigasi ke halaman login
-            // print("Token expired or invalid. Logging out.");
-            // await locator<AuthService>().logout();
-            // Mungkin perlu mekanisme untuk mengarahkan pengguna ke login screen
-          }
-          return handler.next(e); // Lanjutkan
-        },
-      ),
-    );
-
-    // Interceptor untuk logging (berguna saat development)
     if (kDebugMode) {
-      // Hanya aktifkan pada mode debug
       dio.interceptors.add(LogInterceptor(
         requestBody: true,
         responseBody: true,
         requestHeader: true,
-        responseHeader: false,
-        error: true,
-        logPrint: (object) {
-          debugPrint(object.toString());
-        },
+        logPrint: (object) => debugPrint(object.toString()),
       ));
     }
     return dio;
   });
 
-  locator.registerLazySingleton<RequestHandler>(
-      () => RequestHandler(networkInfo: locator()));
-
   locator.registerLazySingleton<NetworkInfo>(() => NetworkInfoImpl(locator()));
-  locator.registerLazySingleton<FcmService>(
-      () => FcmService()); // Daftarkan FcmService
-  // Core
+  locator.registerLazySingleton<RequestHandler>(() => RequestHandler(networkInfo: locator()));
 
-  // Features - Auth
-  // Data sources
-  locator.registerLazySingleton<AuthRemoteDataSource>(
-    () =>
-        AuthRemoteDataSourceImpl(client: locator()), // Dio sudah terkonfigurasi
-  );
+  locator.registerLazySingleton<AuthRemoteDataSource>(() => AuthRemoteDataSourceImpl(client: locator()));
+  locator.registerLazySingleton<HomeRemoteDataSource>(() => HomeRemoteDataSourceImpl(client: locator()));
 
-  // Repositories
-  locator.registerLazySingleton<AuthRepository>(
-    () => AuthRepositoryImpl(
-      remoteDataSource: locator(),
-      // Inject RequestHandler, bukan lagi networkInfo
-      requestHandler: locator<RequestHandler>(),
-    ),
-  );
-
-  // Cubits
-  locator.registerFactory(
-    () => LoginCubit(
-        authRepository: locator(),
-        authService: locator(),
-        fcmService: locator()),
-  );
-
-  // Features - Home
-  // Data sources
-  locator.registerLazySingleton<HomeRemoteDataSource>(
-    () => HomeRemoteDataSourceImpl(client: locator()),
-  );
-
-  // Repositories
-  locator.registerLazySingleton<HomeRepository>(
-    () => HomeRepositoryImpl(
-      remoteDataSource: locator(),
-      requestHandler: locator(),
-    ),
-  );
-
-  // Cubits
-  locator.registerFactory(
-    () => GetVehicleTypeCubit(homeRepository: locator()),
-  );
-
-  locator.registerFactory(
-    () => AddCustomerCubit(homeRepository: locator()),
-  );
-
-  locator.registerFactory(
-    () => GetStallsCubit(homeRepository: locator()),
-  );
-  locator.registerFactory(
-    () => GetMechanicsCubit(homeRepository: locator()),
-  );
-
-  locator.registerFactory(
-    // Register new cubit
-    () => GetServiceDataCubit(homeRepository: locator()),
-  );
-  locator.registerFactory( // New Cubit for chassis search
-    () => GetCustomerByChassisCubit(homeRepository: locator()),
-  );
+  locator.registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(remoteDataSource: locator(), requestHandler: locator()));
+  locator.registerLazySingleton<HomeRepository>(() => HomeRepositoryImpl(remoteDataSource: locator(), requestHandler: locator()));
+  
+  locator.registerFactory(() => LoginCubit(authRepository: locator(), authService: locator(), fcmService: locator()));
+  locator.registerFactory(() => GetVehicleTypeCubit(homeRepository: locator()));
+  locator.registerFactory(() => AddCustomerCubit(homeRepository: locator()));
+  locator.registerFactory(() => GetStallsCubit(homeRepository: locator()));
+  locator.registerFactory(() => GetMechanicsCubit(homeRepository: locator()));
+  locator.registerFactory(() => GetServiceDataCubit(homeRepository: locator()));
+  locator.registerFactory(() => GetCustomerByChassisCubit(homeRepository: locator()));
 }

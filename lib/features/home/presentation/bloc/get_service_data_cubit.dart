@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_message_resolver.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart'; // Import new model
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 
@@ -13,7 +12,7 @@ class GetServiceDataCubit extends Cubit<GetServiceDataState> {
     emit(GetServiceDataLoading());
     final result = await homeRepository.getServiceData();
     result.fold(
-      (failure) => emit(GetServiceDataFailure(ErrorMessageResolver.getMessage(failure))),
+      (failure) => emit(GetServiceDataFailure(failure.userMessage)),
       (data) => emit(GetServiceDataSuccess(data)),
     );
   }

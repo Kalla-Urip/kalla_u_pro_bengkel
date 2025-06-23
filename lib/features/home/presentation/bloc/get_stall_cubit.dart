@@ -1,6 +1,5 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_message_resolver.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 
@@ -13,7 +12,7 @@ class GetStallsCubit extends Cubit<GetStallsState> {
     emit(GetStallsLoading());
     final result = await homeRepository.getStalls();
     result.fold(
-      (failure) => emit(GetStallsFailure(ErrorMessageResolver.getMessage(failure))),
+      (failure) => emit(GetStallsFailure(failure.userMessage)),
       (data) => emit(GetStallsSuccess(data)),
     );
   }

@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_message_resolver.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/chasis_customer_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 
@@ -14,7 +13,9 @@ class GetCustomerByChassisCubit extends Cubit<GetCustomerByChassisState> {
     emit(GetCustomerByChassisLoading());
     final result = await homeRepository.getCustomerByChassisNumber(chassisNumber);
     result.fold(
-      (failure) => emit(GetCustomerByChassisFailure(ErrorMessageResolver.getMessage(failure))),
+      (failure) {
+        emit(GetCustomerByChassisFailure(failure.userMessage));
+      },
       (data) {
         if (data == null) {
           emit(const GetCustomerByChassisNotFound('Data customer tidak ditemukan.'));

@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kalla_u_pro_bengkel/core/error/error_message_resolver.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 
@@ -15,7 +14,7 @@ class GetMechanicsCubit extends Cubit<GetMechanicsState> {
     emit(GetMechanicsLoading());
     final result = await homeRepository.getMechanics();
     result.fold(
-      (failure) => emit(GetMechanicsFailure(ErrorMessageResolver.getMessage(failure))),
+      (failure) => emit(GetMechanicsFailure(failure.userMessage)),
       (data) => emit(GetMechanicsSuccess(data)),
     );
   }
