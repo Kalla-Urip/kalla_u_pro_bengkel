@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_bloc/flutter_bloc.dart'; // Import bloc
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
+// FIX: Import the now separate and corrected CarItemWidget
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
 import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
-import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart'; // Import cubit
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
-import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/empty_state_widget.dart'; // Import model
+import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/empty_state_widget.dart';
+// FEATURE: Import shimmer package for loading effect.
+// Please add `shimmer: ^3.0.0` to your pubspec.yaml dependencies.
+import 'package:shimmer/shimmer.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -82,20 +86,28 @@ class _MainScreenState extends State<MainScreen> {
                 }
               },
               builder: (context, state) {
-                if (state is GetServiceDataLoading) {
-                  return const Center(child: CircularProgressIndicator(
-                    color: AppColors.primary,
-                  ));
-                } else if (state is GetServiceDataSuccess) {
+                // FEATURE: Show shimmer loading effect
+                if (state is GetServiceDataLoading || state is GetServiceDataInitial) {
+                  return _buildShimmerList();
+                } 
+                else if (state is GetServiceDataSuccess) {
                   if (state.serviceData.isEmpty) {
+                    // FIX: Implemented robust pull-to-refresh and centering for empty state
                     return RefreshIndicator(
                       onRefresh: _fetchServiceData,
                       color: AppColors.primary,
-                      child: const SingleChildScrollView( // Wrap with SingleChildScrollView for pull-to-refresh on empty state
-                        physics: AlwaysScrollableScrollPhysics(),
-                        child: EmptyStateWidget(
-                          message: "Tidak ada data layanan yang tersedia saat ini.",
-                        ),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return SingleChildScrollView(
+                            physics: const AlwaysScrollableScrollPhysics(),
+                            child: ConstrainedBox(
+                              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                              child: const EmptyStateWidget(
+                                message: "Tidak ada data layanan yang tersedia saat ini.",
+                              ),
+                            ),
+                          );
+                        }
                       ),
                     );
                   } else {
@@ -105,38 +117,42 @@ class _MainScreenState extends State<MainScreen> {
                       child: _buildServiceDataList(state.serviceData),
                     );
                   }
-                } else if (state is GetServiceDataFailure) {
+                } 
+                else if (state is GetServiceDataFailure) {
+                   // FIX: Implemented robust pull-to-refresh and centering for error state
                   return RefreshIndicator(
                     onRefresh: _fetchServiceData,
                     color: AppColors.primary,
-                    child: SingleChildScrollView( // Wrap with SingleChildScrollView for pull-to-refresh on error state
-                      physics: AlwaysScrollableScrollPhysics(),
-                      child: EmptyStateWidget(
-                        message: "Gagal memuat data: ${state.message}. Tarik untuk menyegarkan.",
-                        imagePath: ImageResources.appIconPng, // You can use a different error image
-                      ),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        return SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: ConstrainedBox(
+                            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                            child: EmptyStateWidget(
+                              message: "Gagal memuat data: ${state.message}.\nTarik untuk menyegarkan.",
+                              imagePath: ImageResources.appIconPng,
+                            ),
+                          ),
+                        );
+                      }
                     ),
                   );
                 }
-                // Initial state or unhandled states
-                return RefreshIndicator(
-                  onRefresh: _fetchServiceData,
-                  color: AppColors.primary,
-                  child: const SingleChildScrollView(
-                    physics: AlwaysScrollableScrollPhysics(),
-                    child: EmptyStateWidget(
-                      message: "Tarik untuk memuat data layanan.",
-                    ),
-                  ),
-                );
+                // Fallback case
+                return const Center(child: Text("Silakan tarik untuk memuat data."));
               },
             ),
           ),
         ],
       ),
       floatingActionButton: Utils.buildFloatingActionButton(onPressed: () async {
-        // Add vehicle functionality
-        context.push(AppRoutes.addCustomer);
+        // FIX: Wait for AddCustomerScreen to pop. If it returns true, it means
+        // a customer was added, so we should refresh the list.
+        final result = await context.push(AppRoutes.addCustomer);
+        if (result == true && mounted) {
+          _fetchServiceData();
+        }
       }),
     );
   }
@@ -149,176 +165,103 @@ class _MainScreenState extends State<MainScreen> {
         final item = serviceData[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
+          // FIX: Using the single, corrected CarItemWidget
           child: CarItemWidget(
-            // Safely accessing nullable properties with null-aware operator ?? ''
-            name: item.owner ?? '',
-            plate: item.plateNumber ?? '',
-            type: item.type ?? '',
-            year: (item.year ?? '').toString(), // Year can be int?, convert to string safely
+            name: item.owner ?? "",
+            plate: item.plateNumber ?? "",
+            type: item.type?? "",
+            year: item.year?.toString() ?? "",
             index: index + 1,
             onTap: () {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('Detail kendaraan ${item.plateNumber ?? ''}')),
               );
+              // TODO: Navigate to detail screen, e.g., context.push('/details', extra: item);
             },
           ),
         );
       },
     );
   }
-}
+  
+  /// FEATURE: Builds the shimmer loading list.
+  Widget _buildShimmerList() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      enabled: true,
+      child: ListView.builder(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
+        itemCount: 6, // Display 6 shimmer items as placeholders
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: _buildShimmerItem(),
+          );
+        },
+      ),
+    );
+  }
 
-// Separate CarItemWidget definition
-class CarItemWidget extends StatelessWidget {
-  // Made properties nullable to match ServiceDataModel
-  final String? name;
-  final String? plate;
-  final String? type;
-  final String? year;
-  final int index;
-  final VoidCallback onTap;
-
-  const CarItemWidget({
-    super.key,
-    this.name, // Now nullable
-    this.plate, // Now nullable
-    this.type,  // Now nullable
-    this.year,  // Now nullable
-    required this.index,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  /// FEATURE: Builds a single shimmer placeholder item that mimics the CarItemWidget layout.
+  Widget _buildShimmerItem() {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
-          ),
-        ],
       ),
       child: IntrinsicHeight(
         child: Row(
           children: [
-            // Orange left accent
             Container(
               width: 4,
-              decoration: const BoxDecoration(
-                color: AppColors.orange,
-                borderRadius: BorderRadius.only(
+              decoration: BoxDecoration(
+                color: Colors.white, // Color is handled by Shimmer
+                borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
                 ),
               ),
             ),
-            // Content
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.all(12.0),
-                child: Row(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Car details
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          // Baris pertama dengan nomor, nama, dan plat
-                          Row(
-                            children: [
-                              Text(
-                                "${index.toString()}. ",
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text(
-                                          name ?? 'N/A', // Use N/A if name is null
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Container(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 8,
-                                            vertical: 2,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: Colors.grey[200],
-                                            borderRadius: BorderRadius.circular(4),
-                                          ),
-                                          child: Text(
-                                            plate ?? 'N/A', // Use N/A if plate is null
-                                            style: const TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 12,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 4),
-
-                          // Baris kedua dengan type dan year
-                          Row(
-                            children: [
-                              // Spasi untuk menyelaraskan dengan nama (setelah nomor)
-                              const SizedBox(width: 14),
-
-                              // Type dan year dengan width yang sama dengan nama dan plat
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${type ?? 'N/A'} - ${year ?? 'N/A'}', // Use N/A if type or year is null
-                                      style: TextStyle(
-                                        color: Colors.grey[600],
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                    // Di sini kita memberi spacer untuk mendorong teks ke kiri
-                                    // jadi akan sejajar dengan name
-                                    const SizedBox(width: 100),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                    Container(
+                      width: double.infinity,
+                      height: 16.0,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
-                    // Detail icon
-                    GestureDetector(
-                      onTap: onTap,
-                      child: SvgPicture.asset(
-                        "assets/icons/ic_arrow.svg",
+                    const SizedBox(height: 8),
+                    Container(
+                      width: MediaQuery.of(context).size.width * 0.5,
+                      height: 12.0,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(4),
                       ),
                     ),
                   ],
                 ),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: Container(
+                width: 18,
+                height: 18,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ),
+            )
           ],
         ),
       ),

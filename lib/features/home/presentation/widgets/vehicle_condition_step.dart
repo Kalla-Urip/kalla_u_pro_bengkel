@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 
 class VehicleConditionStep extends StatefulWidget {
-  final GlobalKey<FormState> formKey;
+
   final Map<String, String> conditionValues;
   final Map<String, bool> carryItemValues;
   final ValueChanged<Map<String, String>> onConditionChanged;
@@ -11,7 +11,6 @@ class VehicleConditionStep extends StatefulWidget {
 
   const VehicleConditionStep({
     super.key,
-    required this.formKey,
     required this.conditionValues,
     required this.carryItemValues,
     required this.onConditionChanged,
@@ -65,7 +64,6 @@ class _VehicleConditionStepState extends State<VehicleConditionStep> {
   @override
   Widget build(BuildContext context) {
     return Form(
-      key: widget.formKey,
       child: ListView(
         physics: const BouncingScrollPhysics(),
         children: [

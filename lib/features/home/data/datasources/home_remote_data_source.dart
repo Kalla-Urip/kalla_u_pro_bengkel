@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:kalla_u_pro_bengkel/core/error/error_codes.dart';
 import 'package:kalla_u_pro_bengkel/core/error/exceptions.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/chasis_customer_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
@@ -13,12 +14,31 @@ abstract class HomeRemoteDataSource {
   Future<List<StallModel>> getStalls();
   Future<List<MechanicModel>> getMechanics();
   Future<List<ServiceDataModel>> getServiceData();
+  Future<ChassisCustomerModel?> getCustomerByChassisNumber(String chassisNumber);
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final Dio client;
 
   HomeRemoteDataSourceImpl({required this.client});
+
+  @override
+  Future<ChassisCustomerModel?> getCustomerByChassisNumber(String chassisNumber) async {
+    final url = '${ApiConstants.customerChasis}/$chassisNumber';
+    try {
+      final response = await client.get(url);
+      final chassisCustomerResponse = ChassisCustomerResponseModel.fromJson(response.data);
+      return chassisCustomerResponse.data; // This can be null
+    } on DioException {
+      rethrow; // Let the ErrorInterceptor handle DioExceptions
+    } catch (e) {
+      throw ServerException(
+        requestOptions: RequestOptions(path: url),
+        message: 'Gagal memproses data customer: ${e.toString()}',
+        errorCode: ErrorCode.invalidResponse,
+      );
+    }
+  }
 
   @override
   Future<List<ServiceDataModel>> getServiceData() async {
@@ -100,40 +120,34 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     }
   }
 
-  @override
-  Future<void> addCustomer(Map<String, dynamic> data) async {
+    Future<void> addCustomer(Map<String, dynamic> data) async {
     const url = ApiConstants.addCustomerEndpoint;
     try {
-      final formData = FormData.fromMap(data);
+      // PERBAIKAN: Kirim Map secara langsung untuk memastikan Content-Type: application/x-www-form-urlencoded
+      // Dio akan meng-encode Map ini secara otomatis.
       final response = await client.post(
         url,
-        data: formData,
+        data: data, // Kirim Map<String, dynamic> langsung
         options: Options(
+          // Tetap sertakan header ini agar eksplisit,
+          // meskipun Dio seharusnya mengaturnya secara otomatis untuk Map<String, dynamic>.
           headers: {'Content-Type': 'application/x-www-form-urlencoded'},
         ),
       );
 
-      // Logika bisnis spesifik untuk endpoint ini.
-      // Interceptor tidak tahu bahwa endpoint ini butuh status 201.
       if (response.statusCode != 201) {
         throw ServerException(
           requestOptions: response.requestOptions,
           message: 'Gagal menyimpan data, server merespon dengan status ${response.statusCode}',
-          errorCode: ErrorCode.apiError, // Kode error yang sesuai
+          errorCode: ErrorCode.apiError,
           statusCode: response.statusCode,
         );
       }
-      // Jika status 201, metode selesai tanpa return (Future<void>)
     } on DioException {
-      // Sama seperti di atas, cukup lemparkan kembali exception
-      // yang sudah disiapkan oleh interceptor.
       rethrow;
     } catch (e) {
-      // Jika exception yang dilempar bukan DioException (misalnya dari throw ServerException di atas)
-      // atau error lainnya, lemparkan kembali atau bungkus jika perlu.
-      if (e is ServerException) rethrow; // Jangan bungkus ulang exception kustom kita
+      if (e is ServerException) rethrow;
 
-      // Fallback untuk error lainnya
       throw ServerException(
         requestOptions: RequestOptions(path: url),
         message: 'Terjadi kesalahan tak terduga: ${e.toString()}',

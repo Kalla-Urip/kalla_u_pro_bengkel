@@ -15,6 +15,7 @@ import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.
 import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/repositories/home_repository.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_customer_by_chasis_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
@@ -172,5 +173,8 @@ Future<void> setupServiceLocator() async {
   locator.registerFactory(
     // Register new cubit
     () => GetServiceDataCubit(homeRepository: locator()),
+  );
+  locator.registerFactory( // New Cubit for chassis search
+    () => GetCustomerByChassisCubit(homeRepository: locator()),
   );
 }

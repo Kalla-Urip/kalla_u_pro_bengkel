@@ -14,6 +14,9 @@ class EmptyStateWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // FIX: This widget structure is correct. The centering issue is fixed in the parent
+    // (MainScreen) by ensuring the parent container has a defined height, allowing
+    // this Center widget to position its child in the vertical middle.
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -25,12 +28,16 @@ class EmptyStateWidget extends StatelessWidget {
             color: Colors.grey[400], // Optional: beri warna pada gambar
           ),
           const SizedBox(height: 24),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 16,
-              color: AppColors.textGrey,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                color: AppColors.textGrey,
+                height: 1.5, // Improve line spacing for multi-line messages
+              ),
             ),
           ),
         ],

@@ -1,6 +1,6 @@
 // kalla_u_pro_bengkel/core/utils/constants.dart
 class ApiConstants {
-  static const String baseUrl = 'http://141.11.25.72:5000/mobile/mechanic';
+  static const String baseUrl = 'https://api-dev.kallaurip.pro/mobile/mechanic';
   static const String loginEndpoint = '/auth/login';
 
   // Home
@@ -9,6 +9,7 @@ class ApiConstants {
    static const String mechanicEndpoint = '/mechanic';
    static const String stallEndPoint = '/stall';
    static const String serviceData = '/service-data';
+   static const String customerChasis = '/customer/chassis-number';
 }
 
 class PrefKeys {

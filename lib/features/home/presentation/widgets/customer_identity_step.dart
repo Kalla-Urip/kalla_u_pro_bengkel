@@ -1,11 +1,10 @@
-// features/home/presentation/widgets/customer_identity_step.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_customer_by_chasis_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
@@ -17,6 +16,7 @@ class CustomerIdentityStep extends StatelessWidget {
   final TextEditingController dobController;
   final TextEditingController whatsappController;
   final VoidCallback onScanBarcode;
+  final VoidCallback onSearchChassis; // New callback for search button
   final TextEditingController plateNumberController;
   final TextEditingController vehicleTypeController; // Controller ini akan menyimpan ID Tipe Kendaraan
   final TextEditingController vehicleYearController;
@@ -33,6 +33,7 @@ class CustomerIdentityStep extends StatelessWidget {
     required this.dobController,
     required this.whatsappController,
     required this.onScanBarcode,
+    required this.onSearchChassis, // Add to constructor
     required this.plateNumberController,
     required this.vehicleTypeController,
     required this.vehicleYearController,
@@ -50,7 +51,6 @@ class CustomerIdentityStep extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         physics: const BouncingScrollPhysics(),
         children: [
-          // ... (Field Nomor Rangka, Nama, Tanggal Lahir, Whatsapp, Nomor Plat tidak berubah) ...
           _buildSectionTitle('Nomor Rangka'),
           CustomTextField(
             controller: frameNumberController,
@@ -62,6 +62,38 @@ class CustomerIdentityStep extends StatelessWidget {
                 padding: const EdgeInsets.all(12.0),
                 child: SvgPicture.asset(ImageResources.icBarcode),
               ),
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Tombol Cari
+          SizedBox(
+            width: double.infinity,
+            child: BlocBuilder<GetCustomerByChassisCubit, GetCustomerByChassisState>(
+              builder: (context, state) {
+                return ElevatedButton(
+                  onPressed: state is GetCustomerByChassisLoading ? null : onSearchChassis,
+                  style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      )),
+                  child: state is GetCustomerByChassisLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: AppColors.primary,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text(
+                          'Cari',
+                          style: TextStyle(color: AppColors.primary, fontWeight: FontWeight.bold),
+                        ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 16),
@@ -84,12 +116,12 @@ class CustomerIdentityStep extends StatelessWidget {
                 initialDate: DateTime.now(),
                 firstDate: DateTime(1920),
                 lastDate: DateTime.now(),
-                  builder: (context, child) => Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: const ColorScheme.light(primary: AppColors.primary),
-                    ),
-                    child: child!,
+                builder: (context, child) => Theme(
+                  data: Theme.of(context).copyWith(
+                    colorScheme: const ColorScheme.light(primary: AppColors.primary),
                   ),
+                  child: child!,
+                ),
               );
               if (pickedDate != null) {
                 dobController.text = DateFormat('yyyy-MM-dd').format(pickedDate);
@@ -114,8 +146,7 @@ class CustomerIdentityStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-
-          // Bagian yang diperbaiki ada di sini
+          // Bagian Tipe Kendaraan yang diperbaiki
           _buildSectionTitle('Tipe Kendaraan'),
           BlocBuilder<GetVehicleTypeCubit, GetVehicleTypeState>(
             builder: (context, state) {
@@ -123,11 +154,10 @@ class CustomerIdentityStep extends StatelessWidget {
                 return CustomDropdown(
                   controller: vehicleTypeController, // Controller untuk menyimpan ID
                   hintText: 'Pilih tipe kendaraan',
-                  // !! INI BAGIAN YANG DIPERBAIKI !!
-                  // Mengubah List<VehicleTypeModel> menjadi Map<String, String>
                   items: Map.fromEntries(
                     state.vehicleTypes.map(
-                      (tipe) => MapEntry(tipe.name, tipe.id.toString()),
+                      // Ensure ID is passed as the value for the dropdown
+                      (tipe) => MapEntry(tipe.name ?? 'Unknown', tipe.id?.toString() ?? ''),
                     ),
                   ),
                   validator: (value) => (value?.isEmpty ?? true) ? 'Tipe kendaraan wajib dipilih' : null,
@@ -161,7 +191,6 @@ class CustomerIdentityStep extends StatelessWidget {
           ),
           const SizedBox(height: 16),
 
-          // ... (Sisa field tidak berubah) ...
           _buildSectionTitle('Tahun Kendaraan'),
           CustomTextField(
             controller: vehicleYearController,

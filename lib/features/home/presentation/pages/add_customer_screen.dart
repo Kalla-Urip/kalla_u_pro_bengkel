@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_text_styles.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
-import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
-import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/chasis_customer_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_customer_by_chasis_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
@@ -15,6 +15,8 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/custom_baro
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/notes_and_other_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/vehicle_condition_step.dart';
+import 'package:kalla_u_pro_bengkel/core/util/utils.dart'; // Import Utils for custom snackbar
+
 
 class AddCustomerScreen extends StatefulWidget {
   const AddCustomerScreen({super.key});
@@ -26,7 +28,8 @@ class AddCustomerScreen extends StatefulWidget {
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
   int _currentStep = 0;
   final _identityFormKey = GlobalKey<FormState>();
-  final _conditionFormKey = GlobalKey<FormState>();
+  // Kita tidak butuh form key untuk step 2 karena validasi dilakukan manual
+  // final _conditionFormKey = GlobalKey<FormState>(); 
   final _notesFormKey = GlobalKey<FormState>();
 
   // Step 1 Controllers
@@ -57,7 +60,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _serviceTypeController = TextEditingController();
   final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
-  final _stallController = TextEditingController(); // Controller baru untuk Stall
+  final _stallController = TextEditingController();
   bool _isTradeIn = false;
 
   @override
@@ -110,7 +113,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   @override
   void dispose() {
-    // Dispose all controllers, including the new ones
     _frameNumberController.dispose();
     _nameController.dispose();
     _dobController.dispose();
@@ -127,44 +129,104 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     super.dispose();
   }
 
+  // Method to handle searching for chassis number
+  void _searchChassisNumber() {
+    final chassisNumber = _frameNumberController.text.trim();
+    if (chassisNumber.isEmpty) {
+      Utils.showWarningSnackBar(context, 'Nomor rangka tidak boleh kosong untuk pencarian.');
+      return;
+    }
+    context.read<GetCustomerByChassisCubit>().searchCustomerByChassisNumber(chassisNumber);
+  }
+
+  // Method to populate fields from fetched chassis data
+  void _populateFieldsFromChassisData(ChassisCustomerModel customer) {
+    _nameController.text = customer.name ?? '';
+    _dobController.text = customer.birthDate ?? '';
+    // Assuming whatsapp number might be stored in 'phone' if present
+    // _whatsappController.text = customer.mToyota != null && customer.mToyota! ? (customer.phone ?? '') : '';
+    _plateNumberController.text = customer.plateNumber ?? '';
+    _vehicleYearController.text = (customer.year ?? '').toString();
+    _addressController.text = customer.address ?? '';
+    _insuranceController.text = customer.insurance ?? '';
+    _hasMToyotaApp = customer.mToyota ?? false;
+
+    // Set vehicle type based on name.
+    // We need to get the vehicle types from GetVehicleTypeCubit state
+    final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
+    if (vehicleTypeState is GetVehicleTypeSuccess) {
+      final matchedType = vehicleTypeState.vehicleTypes.firstWhere(
+        (type) => type.name == customer.type,
+        orElse: () => null!, // Fallback if no match found
+      );
+      if (matchedType != null) {
+        _vehicleTypeController.text = matchedType.id.toString();
+      } else {
+        _vehicleTypeController.text = ''; // Clear if no matching type found
+        Utils.showWarningSnackBar(context, 'Tipe kendaraan dari data ditemukan, tetapi tidak ada di daftar pilihan.');
+      }
+    } else {
+      _vehicleTypeController.text = ''; // Clear if vehicle types are not loaded
+      Utils.showWarningSnackBar(context, 'Daftar tipe kendaraan belum dimuat, tidak dapat mengisi otomatis.');
+    }
+
+    setState(() {}); // Rebuild UI to reflect changes
+  }
+
   @override
   Widget build(BuildContext context) {
-    return BlocListener<AddCustomerCubit, AddCustomerState>(
-      listener: (context, state) {
-        // Menghilangkan dialog loading jika ada
-        if (state is! AddCustomerLoading) {
-          final isDialogShowing = ModalRoute.of(context)?.isCurrent != true;
-          if (isDialogShowing) {
-            Navigator.of(context).pop();
-          }
-        }
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<AddCustomerCubit, AddCustomerState>(
+          listener: (context, state) {
+            if (state is! AddCustomerLoading) {
+              final isDialogShowing = ModalRoute.of(context)?.isCurrent != true;
+              if (isDialogShowing) {
+                Navigator.of(context).pop();
+              }
+            }
 
-        if (state is AddCustomerLoading) {
-          // Tampilkan dialog loading
-          showDialog(
-            context: context,
-            barrierDismissible: false,
-            builder: (context) => const Center(
-              child: CircularProgressIndicator(color: AppColors.primary),
-            ),
-          );
-        } else if (state is AddCustomerSuccess) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(const SnackBar(
-              content: Text('Data customer berhasil disimpan!'),
-              backgroundColor: Colors.green,
-            ));
-          context.pop(); // Kembali ke halaman sebelumnya setelah sukses
-        } else if (state is AddCustomerFailure) {
-          ScaffoldMessenger.of(context)
-            ..hideCurrentSnackBar()
-            ..showSnackBar(SnackBar(
-              content: Text('Gagal: ${state.message}'),
-              backgroundColor: Colors.red,
-            ));
-        }
-      },
+            if (state is AddCustomerLoading) {
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const Center(
+                  child: CircularProgressIndicator(color: AppColors.primary),
+                ),
+              );
+            } else if (state is AddCustomerSuccess) {
+              Utils.showSuccessSnackBar(context, 'Data customer berhasil disimpan!');
+              context.pop(true);
+            } else if (state is AddCustomerFailure) {
+              Utils.showErrorSnackBar(context, 'Gagal: ${state.message}');
+            }
+          },
+        ),
+        BlocListener<GetCustomerByChassisCubit, GetCustomerByChassisState>(
+          listener: (context, state) {
+            // Handle loading state in the button itself, not a global dialog
+            if (state is GetCustomerByChassisSuccess) {
+              _populateFieldsFromChassisData(state.customer);
+              Utils.showSuccessSnackBar(context, 'Data customer ditemukan dan berhasil diisi!');
+            } else if (state is GetCustomerByChassisNotFound) {
+              Utils.showInfoSnackBar(context, state.message);
+              // Optionally clear fields if not found and user might want to input new data
+              _nameController.clear();
+              _dobController.clear();
+              _whatsappController.clear();
+              _plateNumberController.clear();
+              _vehicleTypeController.clear();
+              _vehicleYearController.clear();
+              _addressController.clear();
+              _insuranceController.clear();
+              _hasMToyotaApp = false;
+              setState(() {});
+            } else if (state is GetCustomerByChassisFailure) {
+              Utils.showErrorSnackBar(context, 'Gagal mencari data: ${state.message}');
+            }
+          },
+        ),
+      ],
       child: Scaffold(
         appBar: AppBar(
           backgroundColor: AppColors.primary,
@@ -318,13 +380,16 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             if (result != null) {
               setState(() {
                 _frameNumberController.text = result;
+                _searchChassisNumber(); // Trigger search after scanning
               });
             }
           },
+          onSearchChassis: _searchChassisNumber, // Pass the search function
         );
       case 1:
         return VehicleConditionStep(
-          formKey: _conditionFormKey,
+          // Kunci form tidak lagi diperlukan di sini karena validasi manual
+          // formKey: _conditionFormKey,
           conditionValues: _conditionValues,
           carryItemValues: _carryItemValues,
           onConditionChanged: (values) {
@@ -339,7 +404,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           },
         );
       case 2:
-           return BlocBuilder<GetStallsCubit, GetStallsState>(
+        return BlocBuilder<GetStallsCubit, GetStallsState>(
           builder: (context, stallState) {
             return BlocBuilder<GetMechanicsCubit, GetMechanicsState>(
               builder: (context, mechanicState) {
@@ -435,23 +500,37 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
+  // --- PERUBAHAN DIMULAI ---
+
+  /// Fungsi baru untuk memvalidasi semua pilihan pada step 2.
+  bool _validateVehicleConditions() {
+    // Memeriksa setiap value dalam map `_conditionValues`.
+    // `any` akan berhenti dan mengembalikan `true` jika menemukan value pertama yang kosong.
+    final bool hasEmptySelection = _conditionValues.values.any((value) => value.isEmpty);
+
+    // Jika ada yang kosong, kembalikan false.
+    if (hasEmptySelection) {
+      return false;
+    }
+    
+    // Jika semua sudah terisi, kembalikan true.
+    return true;
+  }
+
   void _handleNextOrSubmit() {
     // Validasi step saat ini sebelum lanjut
     bool isStepValid = false;
     if (_currentStep == 0) {
       isStepValid = _identityFormKey.currentState?.validate() ?? false;
     } else if (_currentStep == 1) {
-      isStepValid = true;
+      // Mengganti `isStepValid = true;` dengan fungsi validasi baru
+      isStepValid = _validateVehicleConditions();
     } else if (_currentStep == 2) {
       isStepValid = _notesFormKey.currentState?.validate() ?? false;
     }
 
     if (!isStepValid) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Harap isi semua data yang wajib diisi.'),
-            backgroundColor: Colors.orange),
-      );
+      Utils.showWarningSnackBar(context, 'Harap isi semua data yang wajib diisi pada langkah ini.');
       return;
     }
 
@@ -463,6 +542,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       _showConfirmationDialog();
     }
   }
+
+  // --- PERUBAHAN SELESAI ---
 
   void _showConfirmationDialog() {
     showDialog(
@@ -581,11 +662,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'birthDate': _dobController.text,
       'phone': _whatsappController.text,
       'plateNumber': _plateNumberController.text,
-      'typeId': _vehicleTypeController
-          .text, 
+      'typeId': _vehicleTypeController.text, // This should be the ID
       'year': _vehicleYearController.text,
       'insurance': _insuranceController.text,
-      'mToyota': _hasMToyotaApp ? 'Ya' : 'Tidak',
+      'mToyota': _hasMToyotaApp ? '1' : '0',
       'source': 'toyota',
       'engineRoomCondition': _conditionValues['ruangMesin'],
       'baseCarpetCondition': _conditionValues['karpetDasar'],
@@ -606,7 +686,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'MechanicId': _mechanicController.text,
     };
 
-    customerData.removeWhere((key, value) => value == null || value == '');
+    customerData.removeWhere((key, value) => value == null || (value is String && value.isEmpty && key != 'mToyota' && key != 'tradeIn'));
 
     context.read<AddCustomerCubit>().submitCustomerData(customerData);
   }
