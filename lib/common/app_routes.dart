@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kalla_u_pro_bengkel/core/util/global_navigator.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/pages/login_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/pages/splash_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/add_customer_screen.dart';
@@ -15,12 +16,10 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String addCustomer = '/add-customer';
 
-  static final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
-  
 
   // GoRouter configuration
   static final router = GoRouter(
-    navigatorKey: rootNavigatorKey, 
+    navigatorKey: GlobalNavigator.navigatorKey,
     initialLocation: splash,
     debugLogDiagnostics: true,
     routes: [

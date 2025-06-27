@@ -4,6 +4,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart'; // Untuk kDebugMode
 import 'package:get_it/get_it.dart';
+import 'package:kalla_u_pro_bengkel/core/error/unauthorized_interceptor.dart';
 import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
@@ -42,7 +43,7 @@ Future<void> setupServiceLocator() async {
         headers: {'Accept': 'application/json'},
       ),
     );
-    
+    dio.interceptors.add(UnauthorizedInterceptor(authService: locator()));
     dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final authService = locator<AuthService>();

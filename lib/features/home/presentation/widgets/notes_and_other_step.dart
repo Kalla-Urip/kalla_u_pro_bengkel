@@ -14,6 +14,7 @@ class NotesAndOthersStep extends StatelessWidget {
   final TextEditingController notesController;
   final TextEditingController mechanicController;
   final TextEditingController stallController;
+  final TextEditingController sourceController; // <-- [MODIFIED] Added controller
   final bool isTradeIn;
   final ValueChanged<bool?> onTradeInChanged;
   // Menerima state, bukan list model
@@ -27,6 +28,7 @@ class NotesAndOthersStep extends StatelessWidget {
     required this.notesController,
     required this.mechanicController,
     required this.stallController,
+    required this.sourceController, // <-- [MODIFIED] Added to constructor
     required this.isTradeIn,
     required this.onTradeInChanged,
     // Mengubah parameter di constructor
@@ -43,6 +45,12 @@ class NotesAndOthersStep extends StatelessWidget {
       'Pemeriksaan Rutin': 'Pemeriksaan Rutin',
       'Perbaikan AC': 'Perbaikan AC',
       'Lainnya': 'Lainnya'
+    };
+    
+    // <-- [MODIFIED] Added source options
+    final sourceOptions = {
+      'Toyota': 'toyota',
+      'Otoxpert': 'otoxpert',
     };
 
     return Form(
@@ -69,6 +77,17 @@ class NotesAndOthersStep extends StatelessWidget {
             hintText: 'Masukkan catatan tambahan (opsional)',
             maxLines: 3,
             validator: (value) => null, // Opsional
+          ),
+          const SizedBox(height: 24),
+          
+          // <-- [MODIFIED] Added Source Dropdown
+          _buildSectionTitle('Sumber'),
+          CustomDropdown(
+            controller: sourceController,
+            hintText: 'Pilih sumber',
+            items: sourceOptions,
+            validator: (value) =>
+                (value?.isEmpty ?? true) ? 'Sumber wajib dipilih' : null,
           ),
           const SizedBox(height: 24),
 
@@ -227,10 +246,10 @@ class NotesAndOthersStep extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
+            Row(
               children: [
                 Icon(
                   Icons.info_outline,
@@ -247,17 +266,17 @@ class NotesAndOthersStep extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 8),
-            const Text(
+            SizedBox(height: 8),
+            Text(
               'Pelanggan tertarik untuk melakukan trade in. '
-              'Petugas marketing akan menghubungi pelanggan untuk informasi lebih lanjut.',
+              'Tim akan menghubungi pelanggan untuk informasi lebih lanjut.',
               style: TextStyle(
                 fontSize: 12,
                 color: Colors.black87,
               ),
             ),
-            const SizedBox(height: 8),
-            _buildTradeInFollowupOptions(),
+            // const SizedBox(height: 8),
+            // _buildTradeInFollowupOptions(),
           ],
         ),
       ),

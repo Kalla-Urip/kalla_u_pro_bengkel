@@ -61,6 +61,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
   final _stallController = TextEditingController();
+  final _sourceController = TextEditingController(); // <-- [MODIFIED] Added controller
   bool _isTradeIn = false;
 
   @override
@@ -126,6 +127,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _notesController.dispose();
     _mechanicController.dispose();
     _stallController.dispose();
+    _sourceController.dispose(); // <-- [MODIFIED] Disposed controller
     super.dispose();
   }
 
@@ -420,6 +422,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   mechanicController: _mechanicController,
                   isTradeIn: _isTradeIn,
                   stallController: _stallController,
+                  sourceController: _sourceController, // <-- [MODIFIED] Passed controller
                   onTradeInChanged: (value) {
                     setState(() {
                       _isTradeIn = value ?? false;
@@ -500,8 +503,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  // --- PERUBAHAN DIMULAI ---
-
   /// Fungsi baru untuk memvalidasi semua pilihan pada step 2.
   bool _validateVehicleConditions() {
     // Memeriksa setiap value dalam map `_conditionValues`.
@@ -542,8 +543,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       _showConfirmationDialog();
     }
   }
-
-  // --- PERUBAHAN SELESAI ---
 
   void _showConfirmationDialog() {
     showDialog(
@@ -666,7 +665,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'year': _vehicleYearController.text,
       'insurance': _insuranceController.text,
       'mToyota': _hasMToyotaApp ? '1' : '0',
-      'source': 'toyota',
+      'source': _sourceController.text, // <-- [MODIFIED] Used controller value
       'engineRoomCondition': _conditionValues['ruangMesin'],
       'baseCarpetCondition': _conditionValues['karpetDasar'],
       'driverCarpetCondition': _conditionValues['karpetPengemudi'],
