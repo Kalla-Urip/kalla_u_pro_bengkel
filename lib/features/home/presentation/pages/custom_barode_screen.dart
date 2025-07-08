@@ -22,7 +22,7 @@ class _CustomBarcodeScreenState extends State<CustomBarcodeScreen> {
   // This is a basic check. A more robust validation might involve regex or a checksum algorithm.
   bool _isValidFrameNumber(String code) {
     // For now, we'll just check if it's not empty and has a reasonable length.
-    return code.isNotEmpty && code.length > 10 && code.length < 20;
+    return code.isNotEmpty && code.length > 8 && code.length < 20;
   }
 
   @override

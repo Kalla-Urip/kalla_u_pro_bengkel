@@ -141,35 +141,37 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     context.read<GetCustomerByChassisCubit>().searchCustomerByChassisNumber(chassisNumber);
   }
 
-  // Method to populate fields from fetched chassis data
-  void _populateFieldsFromChassisData(ChassisCustomerModel customer) {
+ void _populateFieldsFromChassisData(ChassisCustomerModel customer) {
     _nameController.text = customer.name ?? '';
     _dobController.text = customer.birthDate ?? '';
-    // Assuming whatsapp number might be stored in 'phone' if present
-    // _whatsappController.text = customer.mToyota != null && customer.mToyota! ? (customer.phone ?? '') : '';
+    // [MODIFIED] Populate the WhatsApp controller using the 'phone' field
+    _whatsappController.text = customer.phone ?? '';
     _plateNumberController.text = customer.plateNumber ?? '';
     _vehicleYearController.text = (customer.year ?? '').toString();
     _addressController.text = customer.address ?? '';
     _insuranceController.text = customer.insurance ?? '';
     _hasMToyotaApp = customer.mToyota ?? false;
 
-    // Set vehicle type based on name.
-    // We need to get the vehicle types from GetVehicleTypeCubit state
+    // [MODIFIED] Set vehicle type based on ID for better reliability.
     final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
     if (vehicleTypeState is GetVehicleTypeSuccess) {
       final matchedType = vehicleTypeState.vehicleTypes.firstWhere(
-        (type) => type.name == customer.type,
+        // Match by ID from the chassis data
+        (type) => type.id == customer.typeId,
         orElse: () => null!, // Fallback if no match found
       );
+
       if (matchedType != null) {
+        // Set the controller's text to the vehicle's ID.
+        // The CustomDropdown will use this ID to show the correct name.
         _vehicleTypeController.text = matchedType.id.toString();
       } else {
-        _vehicleTypeController.text = ''; // Clear if no matching type found
-        Utils.showWarningSnackBar(context, 'Tipe kendaraan dari data ditemukan, tetapi tidak ada di daftar pilihan.');
+        _vehicleTypeController.clear(); // Clear if no matching type found
+        Utils.showWarningSnackBar(context, 'Tipe kendaraan dari data tidak ditemukan di daftar pilihan.');
       }
     } else {
-      _vehicleTypeController.text = ''; // Clear if vehicle types are not loaded
-      Utils.showWarningSnackBar(context, 'Daftar tipe kendaraan belum dimuat, tidak dapat mengisi otomatis.');
+      _vehicleTypeController.clear(); // Clear if vehicle types are not loaded
+      Utils.showWarningSnackBar(context, 'Daftar tipe kendaraan belum dimuat.');
     }
 
     setState(() {}); // Rebuild UI to reflect changes
@@ -664,6 +666,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'typeId': _vehicleTypeController.text, // This should be the ID
       'year': _vehicleYearController.text,
       'insurance': _insuranceController.text,
+      'address': _addressController.text,
       'mToyota': _hasMToyotaApp ? '1' : '0',
       'source': _sourceController.text, // <-- [MODIFIED] Used controller value
       'engineRoomCondition': _conditionValues['ruangMesin'],

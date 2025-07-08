@@ -72,8 +72,7 @@ class Failure extends Equatable {
           return Failure(rawMessage: e.message ?? 'No Internet', errorCode: ErrorCode.noInternet, statusCode: statusCode);
 
         case DioExceptionType.badResponse:
-           // Jika responsnya adalah HTML, kemungkinan besar ini adalah error server atau URL salah,
-           // bukan sekadar API error biasa. Kita bisa kategorikan sebagai invalidResponse.
+
           if (e.response?.data is String && (e.response!.data as String).trim().toLowerCase().startsWith('<!doctype html')) {
               return Failure(rawMessage: message, errorCode: ErrorCode.invalidResponse, statusCode: statusCode);
           }

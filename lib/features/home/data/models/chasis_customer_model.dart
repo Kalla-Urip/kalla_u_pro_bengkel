@@ -34,12 +34,13 @@ class ChassisCustomerModel extends Equatable {
   final String? plateNumber;
   final int? year;
   final String? insurance;
-  final int? typeId; // This is the ID of the vehicle type
-  final String? type; // This is the name of the vehicle type (e.g., "Toyota GRMN Yaris")
+  final int? typeId;
+  final String? type;
   final String? name;
   final String? birthDate;
   final String? address;
   final bool? mToyota;
+  final String? phone; // <-- [ADDED] Add the phone field
 
   const ChassisCustomerModel({
     this.chassisNumber,
@@ -52,6 +53,7 @@ class ChassisCustomerModel extends Equatable {
     this.birthDate,
     this.address,
     this.mToyota,
+    this.phone, // <-- [ADDED] Add to constructor
   });
 
   factory ChassisCustomerModel.fromJson(Map<String, dynamic> json) {
@@ -66,6 +68,7 @@ class ChassisCustomerModel extends Equatable {
       birthDate: json['birthDate'] as String?,
       address: json['address'] as String?,
       mToyota: json['mToyota'] as bool?,
+      phone: json['phone'] as String?, // <-- [ADDED] Parse from JSON
     );
   }
 
@@ -81,6 +84,7 @@ class ChassisCustomerModel extends Equatable {
       'birthDate': birthDate,
       'address': address,
       'mToyota': mToyota,
+      'phone': phone, // <-- [ADDED] Add to JSON
     };
   }
 
@@ -96,5 +100,6 @@ class ChassisCustomerModel extends Equatable {
         birthDate,
         address,
         mToyota,
+        phone, // <-- [ADDED] Add to props
       ];
 }

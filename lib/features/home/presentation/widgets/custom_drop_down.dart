@@ -29,18 +29,15 @@ class _CustomDropdownState extends State<CustomDropdown> {
   @override
   void initState() {
     super.initState();
-    // Inisialisasi tampilan awal jika controller sudah punya nilai (ID)
-    if (widget.controller.text.isNotEmpty) {
-      widget.items.forEach((key, value) {
-        if (value == widget.controller.text) {
-          _selectedDisplayName = key;
-        }
-      });
-    }
+
   }
 
   @override
   Widget build(BuildContext context) {
+    String? selectedDisplayName;
+    if (widget.controller.text.isNotEmpty && widget.items.containsValue(widget.controller.text)) {
+      selectedDisplayName = widget.items.keys.firstWhere((key) => widget.items[key] == widget.controller.text);
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -62,7 +59,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
               children: [
                 Expanded(
                   child: Text(
-                    _selectedDisplayName ?? widget.hintText,
+                   selectedDisplayName ?? widget.hintText,
                     style: TextStyle(
                       fontSize: 14,
                       color: _selectedDisplayName != null ? Colors.black : Colors.grey.shade400,

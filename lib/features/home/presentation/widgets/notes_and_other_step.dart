@@ -14,10 +14,9 @@ class NotesAndOthersStep extends StatelessWidget {
   final TextEditingController notesController;
   final TextEditingController mechanicController;
   final TextEditingController stallController;
-  final TextEditingController sourceController; // <-- [MODIFIED] Added controller
+  final TextEditingController sourceController; 
   final bool isTradeIn;
   final ValueChanged<bool?> onTradeInChanged;
-  // Menerima state, bukan list model
   final GetStallsState stallState;
   final GetMechanicsState mechanicState;
 
@@ -28,10 +27,9 @@ class NotesAndOthersStep extends StatelessWidget {
     required this.notesController,
     required this.mechanicController,
     required this.stallController,
-    required this.sourceController, // <-- [MODIFIED] Added to constructor
+    required this.sourceController, 
     required this.isTradeIn,
     required this.onTradeInChanged,
-    // Mengubah parameter di constructor
     required this.stallState,
     required this.mechanicState,
   });
@@ -47,7 +45,7 @@ class NotesAndOthersStep extends StatelessWidget {
       'Lainnya': 'Lainnya'
     };
     
-    // <-- [MODIFIED] Added source options
+
     final sourceOptions = {
       'Toyota': 'toyota',
       'Otoxpert': 'otoxpert',
