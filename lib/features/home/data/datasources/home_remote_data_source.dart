@@ -3,6 +3,7 @@ import 'package:kalla_u_pro_bengkel/core/util/constants.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/chasis_customer_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/service_detail_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 
@@ -13,12 +14,16 @@ abstract class HomeRemoteDataSource {
   Future<List<MechanicModel>> getMechanics();
   Future<List<ServiceDataModel>> getServiceData();
   Future<ChassisCustomerModel?> getCustomerByChassisNumber(String chassisNumber);
+  Future<ServiceDetailModel> getServiceDetail(int id);
 }
 
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   final Dio client;
+  // FIX: Add a separate Dio client for customer-related APIs.
+  final Dio customerClient;
 
-  HomeRemoteDataSourceImpl({required this.client});
+  // FIX: Update the constructor to accept the new client.
+  HomeRemoteDataSourceImpl({required this.client, required this.customerClient});
 
   @override
   Future<void> addCustomer(Map<String, dynamic> data) async {
@@ -65,5 +70,19 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
     final response = await client.get(ApiConstants.vehicleTypeEndpoint);
     final vehicleTypeResponse = VehicleTypeResponseModel.fromJson(response.data);
     return vehicleTypeResponse.data ?? [];
+  }
+
+  // FIX: This method now uses the dedicated 'customerClient'.
+  @override
+  Future<ServiceDetailModel> getServiceDetail(int id) async {
+    final url = '${ApiConstants.serviceDetail}/$id';
+    // Use the customerClient which has the correct base URL ('.../mobile').
+    final response = await customerClient.get(url);
+    final serviceDetailResponse = ServiceDetailResponseModel.fromJson(response.data);
+    if (serviceDetailResponse.data != null) {
+      return serviceDetailResponse.data!;
+    } else {
+      throw Exception('Failed to get service detail data');
+    }
   }
 }

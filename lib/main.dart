@@ -11,6 +11,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/add_customer
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_customer_by_chasis_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_detail_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/firebase_options.dart';
@@ -52,6 +53,9 @@ void main()  async {
         ),
         BlocProvider<GetCustomerByChassisCubit>( // New BlocProvider
           create: (context) => locator<GetCustomerByChassisCubit>(),
+        ),
+        BlocProvider<GetServiceDetailCubit>(
+          create: (context) => locator<GetServiceDetailCubit>(),
         ),
       ],
       child: const MyApp(),

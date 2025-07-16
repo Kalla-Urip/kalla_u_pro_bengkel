@@ -5,6 +5,7 @@ import 'package:kalla_u_pro_bengkel/features/auth/presentation/pages/login_scree
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/pages/splash_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/add_customer_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/main_screen.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/service_detail_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/profile/presentation/pages/profile_screen.dart';
 import 'package:kalla_u_pro_bengkel/main.dart';
 
@@ -15,6 +16,7 @@ class AppRoutes {
   static const String main = '/main';
   static const String profile = '/profile';
   static const String addCustomer = '/add-customer';
+  static const String serviceDetail = '/service-detail';
 
 
   // GoRouter configuration
@@ -42,6 +44,13 @@ class AppRoutes {
        GoRoute(
         path: addCustomer,
         builder: (context, state) => const AddCustomerScreen(),
+      ),
+      GoRoute(
+        path: '$serviceDetail/:id',
+        builder: (context, state) {
+          final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
+          return ServiceDetailScreen(serviceId: id);
+        },
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

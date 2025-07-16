@@ -5,14 +5,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
-// FIX: Import the now separate and corrected CarItemWidget
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
 import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/empty_state_widget.dart';
-// FEATURE: Import shimmer package for loading effect.
-// Please add `shimmer: ^3.0.0` to your pubspec.yaml dependencies.
 import 'package:shimmer/shimmer.dart';
 
 class MainScreen extends StatefulWidget {
@@ -26,7 +23,6 @@ class _MainScreenState extends State<MainScreen> {
   @override
   void initState() {
     super.initState();
-    // Trigger initial data fetch when the screen loads
     _fetchServiceData();
   }
 
@@ -35,7 +31,6 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   Future<void> _fetchServiceData() async {
-    // Call the cubit to fetch service data
     context.read<GetServiceDataCubit>().fetchServiceData();
   }
 
@@ -45,19 +40,16 @@ class _MainScreenState extends State<MainScreen> {
       backgroundColor: Colors.grey[100],
       body: Column(
         children: [
-          // Top section with primary color background
           Container(
             padding: const EdgeInsets.only(top: 40, left: 16, right: 16, bottom: 16),
             color: AppColors.primary,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Logo
                 Image.asset(
                   ImageResources.kallaToyotaLogoWhitepng,
                   height: 30,
                 ),
-                // User profile icon
                 GestureDetector(
                   onTap: _navigateToProfile,
                   child: Container(
@@ -74,8 +66,6 @@ class _MainScreenState extends State<MainScreen> {
               ],
             ),
           ),
-          
-          // Vehicle list section using BlocConsumer
           Expanded(
             child: BlocConsumer<GetServiceDataCubit, GetServiceDataState>(
               listener: (context, state) {
@@ -86,13 +76,10 @@ class _MainScreenState extends State<MainScreen> {
                 }
               },
               builder: (context, state) {
-                // FEATURE: Show shimmer loading effect
                 if (state is GetServiceDataLoading || state is GetServiceDataInitial) {
                   return _buildShimmerList();
-                } 
-                else if (state is GetServiceDataSuccess) {
+                } else if (state is GetServiceDataSuccess) {
                   if (state.serviceData.isEmpty) {
-                    // FIX: Implemented robust pull-to-refresh and centering for empty state
                     return RefreshIndicator(
                       onRefresh: _fetchServiceData,
                       color: AppColors.primary,
@@ -107,7 +94,7 @@ class _MainScreenState extends State<MainScreen> {
                               ),
                             ),
                           );
-                        }
+                        },
                       ),
                     );
                   } else {
@@ -117,9 +104,7 @@ class _MainScreenState extends State<MainScreen> {
                       child: _buildServiceDataList(state.serviceData),
                     );
                   }
-                } 
-                else if (state is GetServiceDataFailure) {
-                   // FIX: Implemented robust pull-to-refresh and centering for error state
+                } else if (state is GetServiceDataFailure) {
                   return RefreshIndicator(
                     onRefresh: _fetchServiceData,
                     color: AppColors.primary,
@@ -135,11 +120,10 @@ class _MainScreenState extends State<MainScreen> {
                             ),
                           ),
                         );
-                      }
+                      },
                     ),
                   );
                 }
-                // Fallback case
                 return const Center(child: Text("Silakan tarik untuk memuat data."));
               },
             ),
@@ -147,8 +131,6 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       floatingActionButton: Utils.buildFloatingActionButton(onPressed: () async {
-        // FIX: Wait for AddCustomerScreen to pop. If it returns true, it means
-        // a customer was added, so we should refresh the list.
         final result = await context.push(AppRoutes.addCustomer);
         if (result == true && mounted) {
           _fetchServiceData();
@@ -165,26 +147,28 @@ class _MainScreenState extends State<MainScreen> {
         final item = serviceData[index];
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          // FIX: Using the single, corrected CarItemWidget
           child: CarItemWidget(
             name: item.owner ?? "",
             plate: item.plateNumber ?? "",
-            type: item.type?? "",
+            type: item.type ?? "",
             year: item.year?.toString() ?? "",
             index: index + 1,
             onTap: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Detail kendaraan ${item.plateNumber ?? ''}')),
-              );
-              // TODO: Navigate to detail screen, e.g., context.push('/details', extra: item);
+              // FIX: Navigate to detail screen with the service ID
+              if (item.id != null) {
+                context.push('${AppRoutes.serviceDetail}/${item.id}');
+              } else {
+                 ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('ID layanan tidak tersedia.')),
+                );
+              }
             },
           ),
         );
       },
     );
   }
-  
-  /// FEATURE: Builds the shimmer loading list.
+
   Widget _buildShimmerList() {
     return Shimmer.fromColors(
       baseColor: Colors.grey.shade300,
@@ -192,7 +176,7 @@ class _MainScreenState extends State<MainScreen> {
       enabled: true,
       child: ListView.builder(
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-        itemCount: 6, // Display 6 shimmer items as placeholders
+        itemCount: 6,
         itemBuilder: (context, index) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 12),
@@ -203,7 +187,6 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  /// FEATURE: Builds a single shimmer placeholder item that mimics the CarItemWidget layout.
   Widget _buildShimmerItem() {
     return Container(
       decoration: BoxDecoration(
@@ -216,7 +199,7 @@ class _MainScreenState extends State<MainScreen> {
             Container(
               width: 4,
               decoration: BoxDecoration(
-                color: Colors.white, // Color is handled by Shimmer
+                color: Colors.white,
                 borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),

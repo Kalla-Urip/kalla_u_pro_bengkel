@@ -28,8 +28,6 @@ class AddCustomerScreen extends StatefulWidget {
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
   int _currentStep = 0;
   final _identityFormKey = GlobalKey<FormState>();
-  // Kita tidak butuh form key untuk step 2 karena validasi dilakukan manual
-  // final _conditionFormKey = GlobalKey<FormState>(); 
   final _notesFormKey = GlobalKey<FormState>();
 
   // Step 1 Controllers
@@ -61,17 +59,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
   final _stallController = TextEditingController();
-  final _sourceController = TextEditingController(); // <-- [MODIFIED] Added controller
+  final _sourceController = TextEditingController();
   bool _isTradeIn = false;
 
   @override
   void initState() {
     super.initState();
-    // Memanggil semua cubit yang dibutuhkan untuk mengambil data awal
     context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
     context.read<GetStallsCubit>().fetchStalls();
     context.read<GetMechanicsCubit>().fetchMechanics();
-
     _initializeConditionValues();
   }
 
@@ -90,20 +86,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     };
 
     final bodyParts = [
-      'Kap Mesin',
-      'Atap Mobil',
-      'Bumper Depan',
-      'Bumper Belakang',
-      'Fender Depan Kanan',
-      'Fender Depan Kiri',
-      'Fender Belakang Kanan',
-      'Fender Belakang Kiri',
-      'Pintu Depan Kanan',
-      'Pintu Depan Kiri',
-      'Pintu Belakang Kanan',
-      'Pintu Belakang Kiri',
-      'Spion Kanan',
-      'Spion Kiri'
+      'Kap Mesin', 'Atap Mobil', 'Bumper Depan', 'Bumper Belakang',
+      'Fender Depan Kanan', 'Fender Depan Kiri', 'Fender Belakang Kanan',
+      'Fender Belakang Kiri', 'Pintu Depan Kanan', 'Pintu Depan Kiri',
+      'Pintu Belakang Kanan', 'Pintu Belakang Kiri', 'Spion Kanan', 'Spion Kiri'
     ];
 
     for (final part in bodyParts) {
@@ -127,11 +113,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _notesController.dispose();
     _mechanicController.dispose();
     _stallController.dispose();
-    _sourceController.dispose(); // <-- [MODIFIED] Disposed controller
+    _sourceController.dispose();
     super.dispose();
   }
 
-  // Method to handle searching for chassis number
   void _searchChassisNumber() {
     final chassisNumber = _frameNumberController.text.trim();
     if (chassisNumber.isEmpty) {
@@ -141,10 +126,9 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     context.read<GetCustomerByChassisCubit>().searchCustomerByChassisNumber(chassisNumber);
   }
 
- void _populateFieldsFromChassisData(ChassisCustomerModel customer) {
+  void _populateFieldsFromChassisData(ChassisCustomerModel customer) {
     _nameController.text = customer.name ?? '';
     _dobController.text = customer.birthDate ?? '';
-    // [MODIFIED] Populate the WhatsApp controller using the 'phone' field
     _whatsappController.text = customer.phone ?? '';
     _plateNumberController.text = customer.plateNumber ?? '';
     _vehicleYearController.text = (customer.year ?? '').toString();
@@ -152,29 +136,26 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _insuranceController.text = customer.insurance ?? '';
     _hasMToyotaApp = customer.mToyota ?? false;
 
-    // [MODIFIED] Set vehicle type based on ID for better reliability.
     final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
     if (vehicleTypeState is GetVehicleTypeSuccess) {
-      final matchedType = vehicleTypeState.vehicleTypes.firstWhere(
-        // Match by ID from the chassis data
-        (type) => type.id == customer.typeId,
-        orElse: () => null!, // Fallback if no match found
-      );
-
-      if (matchedType != null) {
-        // Set the controller's text to the vehicle's ID.
-        // The CustomDropdown will use this ID to show the correct name.
+      try {
+        // Mencari tipe kendaraan yang cocok berdasarkan ID
+        final matchedType = vehicleTypeState.vehicleTypes.firstWhere(
+          (type) => type.id == customer.typeId,
+        );
+        // Jika ditemukan, set controller dengan ID-nya
         _vehicleTypeController.text = matchedType.id.toString();
-      } else {
-        _vehicleTypeController.clear(); // Clear if no matching type found
+      } catch (e) {
+        // Jika tidak ditemukan (firstWhere akan throw error), tangani di sini
+        _vehicleTypeController.clear();
         Utils.showWarningSnackBar(context, 'Tipe kendaraan dari data tidak ditemukan di daftar pilihan.');
       }
     } else {
-      _vehicleTypeController.clear(); // Clear if vehicle types are not loaded
+      // Jika daftar tipe kendaraan belum dimuat
+      _vehicleTypeController.clear();
       Utils.showWarningSnackBar(context, 'Daftar tipe kendaraan belum dimuat.');
     }
-
-    setState(() {}); // Rebuild UI to reflect changes
+    setState(() {});
   }
 
   @override
@@ -189,14 +170,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 Navigator.of(context).pop();
               }
             }
-
             if (state is AddCustomerLoading) {
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const Center(
-                  child: CircularProgressIndicator(color: AppColors.primary),
-                ),
+                builder: (context) => const Center(child: CircularProgressIndicator(color: AppColors.primary)),
               );
             } else if (state is AddCustomerSuccess) {
               Utils.showSuccessSnackBar(context, 'Data customer berhasil disimpan!');
@@ -208,13 +186,11 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         ),
         BlocListener<GetCustomerByChassisCubit, GetCustomerByChassisState>(
           listener: (context, state) {
-            // Handle loading state in the button itself, not a global dialog
             if (state is GetCustomerByChassisSuccess) {
               _populateFieldsFromChassisData(state.customer);
               Utils.showSuccessSnackBar(context, 'Data customer ditemukan dan berhasil diisi!');
             } else if (state is GetCustomerByChassisNotFound) {
               Utils.showInfoSnackBar(context, state.message);
-              // Optionally clear fields if not found and user might want to input new data
               _nameController.clear();
               _dobController.clear();
               _whatsappController.clear();
@@ -267,47 +243,23 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       decoration: const BoxDecoration(
         color: Colors.white,
         boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 2,
-            offset: Offset(0, 2),
-          ),
+          BoxShadow(color: Colors.black12, blurRadius: 2, offset: Offset(0, 2)),
         ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _buildStepIndicator(
-            step: 1,
-            title: 'Identitas\nCustomer',
-            isActive: _currentStep >= 0,
-            isCompleted: _currentStep > 0,
-          ),
+          _buildStepIndicator(step: 1, title: 'Identitas\nCustomer', isActive: _currentStep >= 0, isCompleted: _currentStep > 0),
           _buildStepArrow(isActive: _currentStep > 0),
-          _buildStepIndicator(
-            step: 2,
-            title: 'Kondisi\nMobil',
-            isActive: _currentStep >= 1,
-            isCompleted: _currentStep > 1,
-          ),
+          _buildStepIndicator(step: 2, title: 'Kondisi\nMobil', isActive: _currentStep >= 1, isCompleted: _currentStep > 1),
           _buildStepArrow(isActive: _currentStep > 1),
-          _buildStepIndicator(
-            step: 3,
-            title: 'Catatan &\nLainnya',
-            isActive: _currentStep >= 2,
-            isCompleted: false,
-          ),
+          _buildStepIndicator(step: 3, title: 'Catatan &\nLainnya', isActive: _currentStep >= 2, isCompleted: false),
         ],
       ),
     );
   }
 
-  Widget _buildStepIndicator({
-    required int step,
-    required String title,
-    required bool isActive,
-    required bool isCompleted,
-  }) {
+  Widget _buildStepIndicator({required int step, required String title, required bool isActive, required bool isCompleted}) {
     return Column(
       children: [
         Container(
@@ -315,31 +267,19 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           height: 40,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: isActive
-                ? AppColors.primary.withOpacity(0.1)
-                : Colors.grey.shade200,
+            color: isActive ? AppColors.primary.withOpacity(0.1) : Colors.grey.shade200,
           ),
           child: Center(
             child: isCompleted
                 ? const Icon(Icons.check, color: AppColors.primary)
-                : Text(
-                    step.toString(),
-                    style: TextStyle(
-                      color: isActive ? AppColors.primary : Colors.grey,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                : Text(step.toString(), style: TextStyle(color: isActive ? AppColors.primary : Colors.grey, fontWeight: FontWeight.bold)),
           ),
         ),
         const SizedBox(height: 4),
         Text(
           title,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 12,
-            color: isActive ? AppColors.primary : Colors.grey,
-            fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-          ),
+          style: TextStyle(fontSize: 12, color: isActive ? AppColors.primary : Colors.grey, fontWeight: isActive ? FontWeight.w500 : FontWeight.normal),
         ),
       ],
     );
@@ -347,9 +287,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
   Widget _buildStepArrow({required bool isActive}) {
     return SvgPicture.asset(
-      isActive
-          ? ImageResources.icArrowActiveRight
-          : ImageResources.icArrowInactiveRight,
+      isActive ? ImageResources.icArrowActiveRight : ImageResources.icArrowInactiveRight,
       width: 24,
       height: 24,
     );
@@ -370,51 +308,31 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
           addressController: _addressController,
           insuranceController: _insuranceController,
           hasMToyotaApp: _hasMToyotaApp,
-          onMToyotaAppChanged: (value) {
-            setState(() {
-              _hasMToyotaApp = value ?? false;
-            });
-          },
+          onMToyotaAppChanged: (value) => setState(() => _hasMToyotaApp = value ?? false),
           onScanBarcode: () async {
-            final result = await Navigator.push<String>(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => const CustomBarcodeScreen()),
-            );
+            final result = await Navigator.push<String>(context, MaterialPageRoute(builder: (context) => const CustomBarcodeScreen()));
             if (result != null) {
               setState(() {
                 _frameNumberController.text = result;
-                _searchChassisNumber(); // Trigger search after scanning
+                _searchChassisNumber();
               });
             }
           },
-          onSearchChassis: _searchChassisNumber, // Pass the search function
+          onSearchChassis: _searchChassisNumber,
         );
       case 1:
         return VehicleConditionStep(
-          // Kunci form tidak lagi diperlukan di sini karena validasi manual
-          // formKey: _conditionFormKey,
           conditionValues: _conditionValues,
           carryItemValues: _carryItemValues,
-          onConditionChanged: (values) {
-            setState(() {
-              _conditionValues = values;
-            });
-          },
-          onCarryItemChanged: (values) {
-            setState(() {
-              _carryItemValues = values;
-            });
-          },
+          onConditionChanged: (values) => setState(() => _conditionValues = values),
+          onCarryItemChanged: (values) => setState(() => _carryItemValues = values),
         );
       case 2:
         return BlocBuilder<GetStallsCubit, GetStallsState>(
           builder: (context, stallState) {
             return BlocBuilder<GetMechanicsCubit, GetMechanicsState>(
               builder: (context, mechanicState) {
-                // Handle loading state
-                if (stallState is GetStallsLoading ||
-                    mechanicState is GetMechanicsLoading) {
+                if (stallState is GetStallsLoading || mechanicState is GetMechanicsLoading) {
                   return const Center(child: CircularProgressIndicator());
                 }
                 return NotesAndOthersStep(
@@ -424,13 +342,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                   mechanicController: _mechanicController,
                   isTradeIn: _isTradeIn,
                   stallController: _stallController,
-                  sourceController: _sourceController, // <-- [MODIFIED] Passed controller
-                  onTradeInChanged: (value) {
-                    setState(() {
-                      _isTradeIn = value ?? false;
-                    });
-                  },
-                  // Mengirim state langsung ke widget anak
+                  sourceController: _sourceController,
+                  onTradeInChanged: (value) => setState(() => _isTradeIn = value ?? false),
                   stallState: stallState,
                   mechanicState: mechanicState,
                 );
@@ -438,7 +351,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
             );
           },
         );
-
       default:
         return Container();
     }
@@ -449,35 +361,20 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       padding: const EdgeInsets.all(16),
       decoration: const BoxDecoration(
         color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black12,
-            blurRadius: 4,
-            offset: Offset(0, -2),
-          ),
-        ],
+        boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 4, offset: Offset(0, -2))],
       ),
       child: Row(
         children: [
           if (_currentStep > 0)
             Expanded(
               child: OutlinedButton(
-                onPressed: () {
-                  setState(() {
-                    _currentStep -= 1;
-                  });
-                },
+                onPressed: () => setState(() => _currentStep -= 1),
                 style: OutlinedButton.styleFrom(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   side: const BorderSide(color: AppColors.primary),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
-                child: const Text(
-                  'Kembali',
-                  style: TextStyle(color: AppColors.primary),
-                ),
+                child: const Text('Kembali', style: TextStyle(color: AppColors.primary)),
               ),
             ),
           if (_currentStep > 0) const SizedBox(width: 16),
@@ -486,17 +383,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
               onPressed: _handleNextOrSubmit,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 padding: const EdgeInsets.symmetric(vertical: 12),
               ),
               child: Text(
                 _currentStep == 2 ? 'Simpan' : 'Selanjutnya',
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -505,28 +397,19 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  /// Fungsi baru untuk memvalidasi semua pilihan pada step 2.
   bool _validateVehicleConditions() {
-    // Memeriksa setiap value dalam map `_conditionValues`.
-    // `any` akan berhenti dan mengembalikan `true` jika menemukan value pertama yang kosong.
     final bool hasEmptySelection = _conditionValues.values.any((value) => value.isEmpty);
-
-    // Jika ada yang kosong, kembalikan false.
     if (hasEmptySelection) {
       return false;
     }
-    
-    // Jika semua sudah terisi, kembalikan true.
     return true;
   }
 
   void _handleNextOrSubmit() {
-    // Validasi step saat ini sebelum lanjut
     bool isStepValid = false;
     if (_currentStep == 0) {
       isStepValid = _identityFormKey.currentState?.validate() ?? false;
     } else if (_currentStep == 1) {
-      // Mengganti `isStepValid = true;` dengan fungsi validasi baru
       isStepValid = _validateVehicleConditions();
     } else if (_currentStep == 2) {
       isStepValid = _notesFormKey.currentState?.validate() ?? false;
@@ -538,9 +421,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     }
 
     if (_currentStep < 2) {
-      setState(() {
-        _currentStep += 1;
-      });
+      setState(() => _currentStep += 1);
     } else {
       _showConfirmationDialog();
     }
@@ -552,57 +433,30 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       builder: (context) => Dialog(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(8),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         child: Container(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SvgPicture.asset(
-                ImageResources.icWarning,
-                width: 100,
-              ),
+              SvgPicture.asset(ImageResources.icWarning, width: 100),
               const SizedBox(height: 16),
-              Text(
-                'Konfirmasi Tambah Customer',
-                style: AppTextStyles.subtitle2.copyWith(
-                  color: AppColors.textPrimary,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              Text('Konfirmasi Tambah Customer', style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.center),
               const SizedBox(height: 8),
-              const Text(
-                'Silahkan Klik Ya, jika data customer Anda telah sesuai',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              const Text('Silahkan Klik Ya, jika data customer Anda telah sesuai', style: TextStyle(fontSize: 14, color: Colors.grey), textAlign: TextAlign.center),
               const SizedBox(height: 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
+                      onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                         side: const BorderSide(color: Colors.grey),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: Text(
-                        'Batal',
-                        style: AppTextStyles.subtitle2.copyWith(
-                          color: AppColors.textPrimary,
-                        ),
-                      ),
+                      child: Text('Batal', style: AppTextStyles.subtitle2.copyWith(color: AppColors.textPrimary)),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -614,18 +468,10 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4),
-                        ),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                         padding: const EdgeInsets.symmetric(vertical: 12),
                       ),
-                      child: const Text(
-                        'Ya',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
+                      child: const Text('Ya', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w500)),
                     ),
                   ),
                 ],
@@ -645,8 +491,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'luggage_umbrella': _carryItemValues['Payung']! ? 'Ya' : 'Tidak',
       'luggage_money': _carryItemValues['Uang']! ? 'Ya' : 'Tidak',
       'luggage_p3k': _carryItemValues['Kotak P3K']! ? 'Ya' : 'Tidak',
-      'luggage_triangle_protection':
-          _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
+      'luggage_triangle_protection': _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
     };
 
     final bodyConditionData = <String, String>{};
@@ -663,12 +508,12 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'birthDate': _dobController.text,
       'phone': _whatsappController.text,
       'plateNumber': _plateNumberController.text,
-      'typeId': _vehicleTypeController.text, // This should be the ID
+      'typeId': _vehicleTypeController.text,
       'year': _vehicleYearController.text,
       'insurance': _insuranceController.text,
       'address': _addressController.text,
       'mToyota': _hasMToyotaApp ? '1' : '0',
-      'source': _sourceController.text, // <-- [MODIFIED] Used controller value
+      'source': _sourceController.text,
       'engineRoomCondition': _conditionValues['ruangMesin'],
       'baseCarpetCondition': _conditionValues['karpetDasar'],
       'driverCarpetCondition': _conditionValues['karpetPengemudi'],
@@ -681,7 +526,8 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'kilometer': _conditionValues['kilometer'],
       ...luggageData,
       ...bodyConditionData,
-      'serviceType': _serviceTypeController.text,
+      // --- PERUBAHAN: Logika default untuk serviceType ---
+      'serviceType': _serviceTypeController.text.isNotEmpty ? _serviceTypeController.text : 'Lainnya',
       'note': _notesController.text.isNotEmpty ? _notesController.text : '-',
       'tradeIn': _isTradeIn ? 'Ya' : 'Tidak',
       'StallId': _stallController.text,
@@ -689,7 +535,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     };
 
     customerData.removeWhere((key, value) => value == null || (value is String && value.isEmpty && key != 'mToyota' && key != 'tradeIn'));
-
     context.read<AddCustomerCubit>().submitCustomerData(customerData);
   }
 }

@@ -5,6 +5,7 @@ import 'package:kalla_u_pro_bengkel/features/home/data/datasources/home_remote_d
 import 'package:kalla_u_pro_bengkel/features/home/data/models/chasis_customer_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/mechanic_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
+import 'package:kalla_u_pro_bengkel/features/home/data/models/service_detail_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/stall_model.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/vehicle_type_model.dart';
 
@@ -16,6 +17,7 @@ abstract class HomeRepository {
   Future<Either<Failure, List<ServiceDataModel>>> getServiceData();
   Future<Either<Failure, ChassisCustomerModel?>> getCustomerByChassisNumber(
       String chassisNumber);
+  Future<Either<Failure, ServiceDetailModel>> getServiceDetail(int id);
 }
 
 class HomeRepositoryImpl implements HomeRepository {
@@ -55,5 +57,9 @@ class HomeRepositoryImpl implements HomeRepository {
   @override
   Future<Either<Failure, ChassisCustomerModel?>> getCustomerByChassisNumber(String chassisNumber) {
     return requestHandler.handle(() => remoteDataSource.getCustomerByChassisNumber(chassisNumber));
+  }
+  @override
+  Future<Either<Failure, ServiceDetailModel>> getServiceDetail(int id) {
+    return requestHandler.handle(() => remoteDataSource.getServiceDetail(id));
   }
 }
