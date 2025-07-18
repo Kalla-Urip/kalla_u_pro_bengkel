@@ -1,25 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
-
-
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_mechanic_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_drop_down.dart';
-import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/custom_text_field.dart';
-
-
-
-
-// =============================================================================
-// WIDGET: NotesAndOthersStep
-// =============================================================================
 
 class NotesAndOthersStep extends StatelessWidget {
   final GlobalKey<FormState> formKey;
   final TextEditingController serviceTypeController;
-  final TextEditingController notesController;
   final TextEditingController mechanicController;
   final TextEditingController stallController;
   final TextEditingController sourceController;
@@ -32,7 +20,6 @@ class NotesAndOthersStep extends StatelessWidget {
     super.key,
     required this.formKey,
     required this.serviceTypeController,
-    required this.notesController,
     required this.mechanicController,
     required this.stallController,
     required this.sourceController,
@@ -44,7 +31,6 @@ class NotesAndOthersStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // --- PERUBAHAN: Menambahkan 'Servis Berkala' ---
     final serviceTypes = {
       'Tune Up': 'Tune Up',
       'Ganti Oli': 'Ganti Oli',
@@ -67,17 +53,7 @@ class NotesAndOthersStep extends StatelessWidget {
             controller: serviceTypeController,
             hintText: 'Pilih jenis service (opsional)',
             items: serviceTypes,
-            // --- PERUBAHAN: Validator dihilangkan agar menjadi opsional ---
-            validator: (value) => null,
-          ),
-          const SizedBox(height: 24),
-
-          _buildSectionTitle('Catatan'),
-          CustomTextField(
-            controller: notesController,
-            hintText: 'Masukkan catatan tambahan (opsional)',
-            maxLines: 3,
-            validator: (value) => null,
+            validator: (value) => null, // Optional
           ),
           const SizedBox(height: 24),
           
@@ -113,9 +89,8 @@ class NotesAndOthersStep extends StatelessWidget {
       final Map<String, String> stallItems = {for (var stall in state.stalls) stall.name: stall.id.toString()};
       return CustomDropdown(
         controller: stallController,
-        hintText: 'Pilih stall (opsional)',
+        hintText: 'Pilih stall',
         items: stallItems,
-        // --- PERUBAHAN: Validator dihilangkan agar menjadi opsional ---
         validator: (value) => null,
       );
     }
@@ -131,9 +106,8 @@ class NotesAndOthersStep extends StatelessWidget {
       final Map<String, String> mechanicItems = {for (var mechanic in state.mechanics) mechanic.name: mechanic.id.toString()};
       return CustomDropdown(
         controller: mechanicController,
-        hintText: 'Pilih petugas bengkel (opsional)',
+        hintText: 'Pilih petugas bengkel',
         items: mechanicItems,
-        // --- PERUBAHAN: Validator dihilangkan agar menjadi opsional ---
         validator: (value) => null,
       );
     }

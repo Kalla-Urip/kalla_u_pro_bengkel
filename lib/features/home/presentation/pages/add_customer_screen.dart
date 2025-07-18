@@ -15,8 +15,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/custom_baro
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/customer_identity_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/notes_and_other_step.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/vehicle_condition_step.dart';
-import 'package:kalla_u_pro_bengkel/core/util/utils.dart'; // Import Utils for custom snackbar
-
+import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
 
 class AddCustomerScreen extends StatefulWidget {
   const AddCustomerScreen({super.key});
@@ -28,6 +27,7 @@ class AddCustomerScreen extends StatefulWidget {
 class _AddCustomerScreenState extends State<AddCustomerScreen> {
   int _currentStep = 0;
   final _identityFormKey = GlobalKey<FormState>();
+  final _vehicleConditionFormKey = GlobalKey<FormState>(); // Key for step 2
   final _notesFormKey = GlobalKey<FormState>();
 
   // Step 1 Controllers
@@ -40,23 +40,17 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
   final _vehicleYearController = TextEditingController();
   final _addressController = TextEditingController();
   final _insuranceController = TextEditingController();
-  bool _hasMToyotaApp = true; // Default value
+  bool _hasMToyotaApp = true;
 
   // Step 2 Data
+  final _scrollControllerStep2 = ScrollController();
   Map<String, String> _conditionValues = {};
-  Map<String, bool> _carryItemValues = {
-    'STNK': false,
-    'Booklet': false,
-    'Toolset': false,
-    'Payung': false,
-    'Uang': false,
-    'Kotak P3K': false,
-    'Segitiga Pengaman': false,
-  };
+  Map<String, List<String>> _bodyConditionValues = {}; // Changed for multiple selections
+  Map<String, bool> _carryItemValues = {};
+  final _notesController = TextEditingController(); // Moved from step 3
 
   // Step 3 Controllers
   final _serviceTypeController = TextEditingController();
-  final _notesController = TextEditingController();
   final _mechanicController = TextEditingController();
   final _stallController = TextEditingController();
   final _sourceController = TextEditingController();
@@ -68,18 +62,19 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     context.read<GetVehicleTypeCubit>().fetchVehicleTypes();
     context.read<GetStallsCubit>().fetchStalls();
     context.read<GetMechanicsCubit>().fetchMechanics();
-    _initializeConditionValues();
+    _initializeAllValues();
   }
 
-  void _initializeConditionValues() {
+  void _initializeAllValues() {
+    // Initialize non-body conditions
     _conditionValues = {
       'ruangMesin': '',
       'karpetDasar': '',
       'karpetPengemudi': '',
-      'banFRRH': '',
-      'banFRLH': '',
-      'banRRRH': '',
-      'banRRLH': '',
+      'banDepanKanan': '',
+      'banDepanKiri': '',
+      'banBelakangKanan': '',
+      'banBelakangKiri': '',
       'baterai': '',
       'bbm': '',
       'kilometer': '',
@@ -87,19 +82,35 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
 
     final bodyParts = [
       'Kap Mesin', 'Atap Mobil', 'Bumper Depan', 'Bumper Belakang',
-      'Fender Depan Kanan', 'Fender Depan Kiri', 'Fender Belakang Kanan',
-      'Fender Belakang Kiri', 'Pintu Depan Kanan', 'Pintu Depan Kiri',
-      'Pintu Belakang Kanan', 'Pintu Belakang Kiri', 'Spion Kanan', 'Spion Kiri'
+      'Pintu Bagasi', 'Fender Depan Kanan', 'Fender Depan Kiri',
+      'Fender Belakang Kanan', 'Fender Belakang Kiri', 'Pintu Depan Kanan',
+      'Pintu Depan Kiri', 'Pintu Belakang Kanan', 'Pintu Belakang Kiri',
+      'Spion Kanan', 'Spion Kiri'
     ];
 
+    // Initialize body conditions for multi-selection
     for (final part in bodyParts) {
       final key = 'body_${part.replaceAll(' ', '_').toLowerCase()}';
-      _conditionValues[key] = '';
+      _bodyConditionValues[key] = [];
     }
+
+    // Initialize carry items
+    _carryItemValues = {
+      'STNK': false,
+      'Booklet': false,
+      'Toolset': false,
+      'Payung': false,
+      'Uang': false,
+      'Kotak P3K': false,
+      'Segitiga Pengaman': false,
+      'Ban Serep': false, // Added
+      'Baut Roda': false, // Added
+    };
   }
 
   @override
   void dispose() {
+    // Dispose all controllers
     _frameNumberController.dispose();
     _nameController.dispose();
     _dobController.dispose();
@@ -114,6 +125,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     _mechanicController.dispose();
     _stallController.dispose();
     _sourceController.dispose();
+    _scrollControllerStep2.dispose();
     super.dispose();
   }
 
@@ -139,19 +151,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     final vehicleTypeState = context.read<GetVehicleTypeCubit>().state;
     if (vehicleTypeState is GetVehicleTypeSuccess) {
       try {
-        // Mencari tipe kendaraan yang cocok berdasarkan ID
         final matchedType = vehicleTypeState.vehicleTypes.firstWhere(
           (type) => type.id == customer.typeId,
         );
-        // Jika ditemukan, set controller dengan ID-nya
         _vehicleTypeController.text = matchedType.id.toString();
       } catch (e) {
-        // Jika tidak ditemukan (firstWhere akan throw error), tangani di sini
         _vehicleTypeController.clear();
         Utils.showWarningSnackBar(context, 'Tipe kendaraan dari data tidak ditemukan di daftar pilihan.');
       }
     } else {
-      // Jika daftar tipe kendaraan belum dimuat
       _vehicleTypeController.clear();
       Utils.showWarningSnackBar(context, 'Daftar tipe kendaraan belum dimuat.');
     }
@@ -322,9 +330,14 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
         );
       case 1:
         return VehicleConditionStep(
+          key: _vehicleConditionFormKey, // Use a key to access the state
+          scrollController: _scrollControllerStep2,
           conditionValues: _conditionValues,
+          bodyConditionValues: _bodyConditionValues,
           carryItemValues: _carryItemValues,
+          notesController: _notesController,
           onConditionChanged: (values) => setState(() => _conditionValues = values),
+          onBodyConditionChanged: (values) => setState(() => _bodyConditionValues = values),
           onCarryItemChanged: (values) => setState(() => _carryItemValues = values),
         );
       case 2:
@@ -338,7 +351,6 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
                 return NotesAndOthersStep(
                   formKey: _notesFormKey,
                   serviceTypeController: _serviceTypeController,
-                  notesController: _notesController,
                   mechanicController: _mechanicController,
                   isTradeIn: _isTradeIn,
                   stallController: _stallController,
@@ -397,26 +409,55 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
     );
   }
 
-  bool _validateVehicleConditions() {
-    final bool hasEmptySelection = _conditionValues.values.any((value) => value.isEmpty);
-    if (hasEmptySelection) {
-      return false;
-    }
-    return true;
+  String? _findFirstUnfilledCondition() {
+      // Check simple conditions
+      for (var entry in _conditionValues.entries) {
+          if (entry.value.isEmpty) {
+              return 'Harap isi kondisi: ${entry.key}';
+          }
+      }
+      // Check body conditions
+      for (var entry in _bodyConditionValues.entries) {
+          if (entry.value.isEmpty) {
+              final readableName = entry.key.substring(5).replaceAll('_', ' ');
+              return 'Harap isi kondisi body: ${readableName[0].toUpperCase()}${readableName.substring(1)}';
+          }
+      }
+      // Check kilometer and BBM specifically if they are in a separate form
+      if (_conditionValues['kilometer']?.isEmpty ?? true) {
+        return 'Harap isi kolom Kilometer.';
+      }
+       if (_conditionValues['bbm']?.isEmpty ?? true) {
+        return 'Harap pilih kondisi BBM.';
+      }
+      return null;
   }
+
 
   void _handleNextOrSubmit() {
     bool isStepValid = false;
     if (_currentStep == 0) {
       isStepValid = _identityFormKey.currentState?.validate() ?? false;
+      if (!isStepValid) {
+        Utils.showWarningSnackBar(context, 'Harap isi semua data yang wajib diisi.');
+      }
     } else if (_currentStep == 1) {
-      isStepValid = _validateVehicleConditions();
+      final firstError = _findFirstUnfilledCondition();
+      if (firstError != null) {
+          isStepValid = false;
+          Utils.showWarningSnackBar(context, firstError);
+          // Here you could add logic to scroll to the specific field if you have keys for them
+      } else {
+          isStepValid = true;
+      }
     } else if (_currentStep == 2) {
       isStepValid = _notesFormKey.currentState?.validate() ?? false;
+       if (!isStepValid) {
+        Utils.showWarningSnackBar(context, 'Harap isi semua data yang wajib diisi.');
+      }
     }
 
     if (!isStepValid) {
-      Utils.showWarningSnackBar(context, 'Harap isi semua data yang wajib diisi pada langkah ini.');
       return;
     }
 
@@ -492,13 +533,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'luggage_money': _carryItemValues['Uang']! ? 'Ya' : 'Tidak',
       'luggage_p3k': _carryItemValues['Kotak P3K']! ? 'Ya' : 'Tidak',
       'luggage_triangle_protection': _carryItemValues['Segitiga Pengaman']! ? 'Ya' : 'Tidak',
+      'luggage_spare_tire': _carryItemValues['Ban Serep']! ? 'Ya' : 'Tidak',
+      'luggage_wheel_bolt': _carryItemValues['Baut Roda']! ? 'Ya' : 'Tidak',
     };
 
     final bodyConditionData = <String, String>{};
-    _conditionValues.forEach((key, value) {
+    _bodyConditionValues.forEach((key, value) {
       if (key.startsWith('body_')) {
         final newKey = 'bodyCondition_${key.substring(5)}';
-        bodyConditionData[newKey] = value;
+        bodyConditionData[newKey] = value.join(', '); // Join list into a single string
       }
     });
 
@@ -517,16 +560,15 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'engineRoomCondition': _conditionValues['ruangMesin'],
       'baseCarpetCondition': _conditionValues['karpetDasar'],
       'driverCarpetCondition': _conditionValues['karpetPengemudi'],
-      'fr_rh': _conditionValues['banFRRH'],
-      'fr_lh': _conditionValues['banFRLH'],
-      'rr_rh': _conditionValues['banRRRH'],
-      'rr_lh': _conditionValues['banRRLH'],
+      'fr_rh': _conditionValues['banDepanKanan'],
+      'fr_lh': _conditionValues['banDepanKiri'],
+      'rr_rh': _conditionValues['banBelakangKanan'],
+      'rr_lh': _conditionValues['banBelakangKiri'],
       'batteraiCondition': _conditionValues['baterai'],
       'fuelTotal': _conditionValues['bbm'],
       'kilometer': _conditionValues['kilometer'],
       ...luggageData,
       ...bodyConditionData,
-      // --- PERUBAHAN: Logika default untuk serviceType ---
       'serviceType': _serviceTypeController.text.isNotEmpty ? _serviceTypeController.text : 'Lainnya',
       'note': _notesController.text.isNotEmpty ? _notesController.text : '-',
       'tradeIn': _isTradeIn ? 'Ya' : 'Tidak',
@@ -534,7 +576,7 @@ class _AddCustomerScreenState extends State<AddCustomerScreen> {
       'MechanicId': _mechanicController.text,
     };
 
-    customerData.removeWhere((key, value) => value == null || (value is String && value.isEmpty && key != 'mToyota' && key != 'tradeIn'));
+    customerData.removeWhere((key, value) => value == null || (value is String && value.isEmpty && key != 'mToyota' && key != 'tradeIn' && key != 'birthDate' && key != 'address' && key != 'insurance'));
     context.read<AddCustomerCubit>().submitCustomerData(customerData);
   }
 }

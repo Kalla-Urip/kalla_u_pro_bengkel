@@ -16,9 +16,9 @@ class CustomerIdentityStep extends StatelessWidget {
   final TextEditingController dobController;
   final TextEditingController whatsappController;
   final VoidCallback onScanBarcode;
-  final VoidCallback onSearchChassis; // New callback for search button
+  final VoidCallback onSearchChassis;
   final TextEditingController plateNumberController;
-  final TextEditingController vehicleTypeController; // Controller ini akan menyimpan ID Tipe Kendaraan
+  final TextEditingController vehicleTypeController;
   final TextEditingController vehicleYearController;
   final TextEditingController addressController;
   final TextEditingController insuranceController;
@@ -33,7 +33,7 @@ class CustomerIdentityStep extends StatelessWidget {
     required this.dobController,
     required this.whatsappController,
     required this.onScanBarcode,
-    required this.onSearchChassis, // Add to constructor
+    required this.onSearchChassis,
     required this.plateNumberController,
     required this.vehicleTypeController,
     required this.vehicleYearController,
@@ -65,8 +65,6 @@ class CustomerIdentityStep extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-
-          // Tombol Cari
           SizedBox(
             width: double.infinity,
             child: BlocBuilder<GetCustomerByChassisCubit, GetCustomerByChassisState>(
@@ -104,12 +102,12 @@ class CustomerIdentityStep extends StatelessWidget {
             validator: (value) => (value?.isEmpty ?? true) ? 'Nama wajib diisi' : null,
           ),
           const SizedBox(height: 16),
-          _buildSectionTitle('Tanggal Lahir'),
+          _buildSectionTitle('Tanggal Lahir (Opsional)'),
           CustomTextField(
             controller: dobController,
             hintText: 'Pilih tanggal lahir',
             readOnly: true,
-            validator: (value) => (value?.isEmpty ?? true) ? 'Tanggal lahir wajib dipilih' : null,
+            validator: (value) => null, // Made optional
             onTap: () async {
               DateTime? pickedDate = await showDatePicker(
                 context: context,
@@ -145,25 +143,21 @@ class CustomerIdentityStep extends StatelessWidget {
             validator: (value) => (value?.isEmpty ?? true) ? 'Nomor plat wajib diisi' : null,
           ),
           const SizedBox(height: 16),
-
-          // Bagian Tipe Kendaraan yang diperbaiki
           _buildSectionTitle('Tipe Kendaraan'),
           BlocBuilder<GetVehicleTypeCubit, GetVehicleTypeState>(
             builder: (context, state) {
               if (state is GetVehicleTypeSuccess) {
                 return CustomDropdown(
-                  controller: vehicleTypeController, // Controller untuk menyimpan ID
+                  controller: vehicleTypeController,
                   hintText: 'Pilih tipe kendaraan',
                   items: Map.fromEntries(
                     state.vehicleTypes.map(
-                      // Ensure ID is passed as the value for the dropdown
                       (tipe) => MapEntry(tipe.name ?? 'Unknown', tipe.id?.toString() ?? ''),
                     ),
                   ),
                   validator: (value) => (value?.isEmpty ?? true) ? 'Tipe kendaraan wajib dipilih' : null,
                 );
               }
-              // Tampilkan loading atau error jika perlu
               if (state is GetVehicleTypeFailure) {
                 return Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -190,7 +184,6 @@ class CustomerIdentityStep extends StatelessWidget {
             },
           ),
           const SizedBox(height: 16),
-
           _buildSectionTitle('Tahun Kendaraan'),
           CustomTextField(
             controller: vehicleYearController,
@@ -199,19 +192,19 @@ class CustomerIdentityStep extends StatelessWidget {
             validator: (value) => (value?.isEmpty ?? true) ? 'Tahun kendaraan wajib diisi' : null,
           ),
           const SizedBox(height: 16),
-          _buildSectionTitle('Alamat'),
+          _buildSectionTitle('Alamat (Opsional)'),
           CustomTextField(
             controller: addressController,
             hintText: 'Masukkan alamat customer',
             maxLines: 2,
-            validator: (value) => (value?.isEmpty ?? true) ? 'Alamat wajib diisi' : null,
+            validator: (value) => null, // Made optional
           ),
           const SizedBox(height: 16),
-          _buildSectionTitle('Asuransi'),
+          _buildSectionTitle('Asuransi (Opsional)'),
           CustomTextField(
             controller: insuranceController,
             hintText: 'Masukkan nama asuransi',
-            validator: (value) => (value?.isEmpty ?? true) ? 'Asuransi wajib diisi' : null,
+            validator: (value) => null, // Made optional
           ),
           const SizedBox(height: 16),
           _buildSectionTitle('Download M-Toyota'),
