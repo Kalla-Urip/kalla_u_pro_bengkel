@@ -7,6 +7,25 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:11743303784:android:3acc73ec6d9b3718bb43dd",
+        "android_client_info": {
+          "package_name": "com.autodhil.kalla_u_pro_sales"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKkpuFXfvBgu_dY6jzjAsPqpj8K4xp4wM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:11743303784:android:ef71444c9fe185ccbb43dd",
         "android_client_info": {
           "package_name": "com.example.kalla_u_pro_bengkel"
@@ -26,9 +45,28 @@
     },
     {
       "client_info": {
-        "mobilesdk_app_id": "1:11743303784:android:947f8e7360711c12bb43dd",
+        "mobilesdk_app_id": "1:11743303784:android:aa375f065f67de7fbb43dd",
         "android_client_info": {
-          "package_name": "com.example.test_firebase"
+          "package_name": "com.example.kalla_u_pro_sales"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKkpuFXfvBgu_dY6jzjAsPqpj8K4xp4wM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:11743303784:android:6983f64c8c87b178bb43dd",
+        "android_client_info": {
+          "package_name": "com.example.kalla_u_pro_trust"
         }
       },
       "oauth_client": [],

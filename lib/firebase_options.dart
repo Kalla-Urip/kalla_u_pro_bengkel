@@ -65,4 +65,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'kalla-urip.firebasestorage.app',
     iosBundleId: 'com.example.kallaUProBengkel',
   );
+
 }
