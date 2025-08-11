@@ -1,4 +1,4 @@
-package com.autodhil.kalla_u_pro_bengkel
+package com.autodhil.kallauprobengkel
 
 import io.flutter.embedding.android.FlutterActivity
 

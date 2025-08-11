@@ -51,7 +51,7 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyAKkpuFXfvBgu_dY6jzjAsPqpj8K4xp4wM',
-    appId: '1:11743303784:android:ef71444c9fe185ccbb43dd',
+    appId: '1:11743303784:android:a36a9cbc45f47c01bb43dd',
     messagingSenderId: '11743303784',
     projectId: 'kalla-urip',
     storageBucket: 'kalla-urip.firebasestorage.app',
@@ -59,11 +59,10 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAQHnVMtKSfOI6shEWEvAafM3kvfJxFAbA',
-    appId: '1:11743303784:ios:4c8c0ce55dedb3e2bb43dd',
+    appId: '1:11743303784:ios:5d8038dcf9f68faebb43dd',
     messagingSenderId: '11743303784',
     projectId: 'kalla-urip',
     storageBucket: 'kalla-urip.firebasestorage.app',
-    iosBundleId: 'com.example.kallaUProBengkel',
+    iosBundleId: 'com.autodhil.kallauprobengkel',
   );
-
 }
