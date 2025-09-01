@@ -152,7 +152,7 @@ class CustomerIdentityStep extends StatelessWidget {
                   hintText: 'Pilih tipe kendaraan',
                   items: Map.fromEntries(
                     state.vehicleTypes.map(
-                      (tipe) => MapEntry(tipe.name ?? 'Unknown', tipe.id?.toString() ?? ''),
+                      (tipe) => MapEntry(tipe.name ?? 'Unknown', tipe.id.toString() ?? ''),
                     ),
                   ),
                   validator: (value) => (value?.isEmpty ?? true) ? 'Tipe kendaraan wajib dipilih' : null,

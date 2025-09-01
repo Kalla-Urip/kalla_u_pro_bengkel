@@ -7,10 +7,10 @@ class EmptyStateWidget extends StatelessWidget {
   final String imagePath;
 
   const EmptyStateWidget({
-    Key? key,
+    super.key,
     this.message = "Tidak ada pekerjaan yang tersedia saat ini.",
     this.imagePath = ImageResources.errorIcon, // Ganti dengan path aset Anda
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

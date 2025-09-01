@@ -6,6 +6,7 @@ import 'package:kalla_u_pro_bengkel/common/app_colors.dart';
 import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/image_resources.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/car_item_widget.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/widgets/input_method_selection_dialog.dart';
 import 'package:kalla_u_pro_bengkel/core/util/utils.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_data_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/data/models/service_data_model.dart';
@@ -32,6 +33,26 @@ class _MainScreenState extends State<MainScreen> {
 
   Future<void> _fetchServiceData() async {
     context.read<GetServiceDataCubit>().fetchServiceData();
+  }
+
+  void _showInputMethodDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => InputMethodSelectionDialog(
+        onManualMethod: () async {
+          final result = await context.push(AppRoutes.addCustomer);
+          if (result == true && mounted) {
+            _fetchServiceData();
+          }
+        },
+        onAiMethod: () async {
+          final result = await context.push(AppRoutes.webviewWac);
+          if (result == true && mounted) {
+            _fetchServiceData();
+          }
+        },
+      ),
+    );
   }
 
   @override
@@ -131,10 +152,7 @@ class _MainScreenState extends State<MainScreen> {
         ],
       ),
       floatingActionButton: Utils.buildFloatingActionButton(onPressed: () async {
-        final result = await context.push(AppRoutes.addCustomer);
-        if (result == true && mounted) {
-          _fetchServiceData();
-        }
+        _showInputMethodDialog();
       }),
     );
   }
@@ -198,9 +216,9 @@ class _MainScreenState extends State<MainScreen> {
           children: [
             Container(
               width: 4,
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Colors.white,
-                borderRadius: const BorderRadius.only(
+                borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(8),
                   bottomLeft: Radius.circular(8),
                 ),

@@ -118,7 +118,7 @@ class _CustomDropdownState extends State<CustomDropdown> {
                 ),
               ],
             ),
-            constraints: BoxConstraints(maxHeight: 200),
+            constraints: const BoxConstraints(maxHeight: 200),
             child: ListView.builder(
               shrinkWrap: true,
               padding: EdgeInsets.zero,

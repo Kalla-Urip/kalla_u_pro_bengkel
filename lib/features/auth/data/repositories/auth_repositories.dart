@@ -1,6 +1,5 @@
 import 'package:dartz/dartz.dart';
 import 'package:kalla_u_pro_bengkel/core/error/failures.dart';
-import 'package:kalla_u_pro_bengkel/core/network/network_info.dart';
 import 'package:kalla_u_pro_bengkel/core/util/request_handler.dart'; // Impor RequestHandler
 import 'package:kalla_u_pro_bengkel/features/auth/data/datasources/auth_remote_data_source.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/models/login_response_model.dart';

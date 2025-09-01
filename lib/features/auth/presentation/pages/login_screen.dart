@@ -69,8 +69,9 @@ class _LoginScreenState extends State<LoginScreen> {
                 await fcmService.sendTokenToBackend(
                     fcmToken); // await agar selesai sebelum lanjut
               } else {
-                if (kDebugMode)
+                if (kDebugMode) {
                   print("Gagal mendapatkan FCM token setelah login.");
+                }
                 // Pertimbangkan untuk mencoba lagi nanti atau memberitahu pengguna
               }
 
@@ -84,9 +85,10 @@ class _LoginScreenState extends State<LoginScreen> {
               } else {
                 await fcmService
                     .initialize(context); // fallback ke context saat ini
-                if (kDebugMode)
+                if (kDebugMode) {
                   print(
                       "Root context not available for FCM init, using LoginScreen context.");
+                }
               }
 
               // 4. Lanjutkan navigasi
@@ -151,8 +153,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                     hintText: 'Masukkan NIK Karyawan'),
                                 keyboardType: TextInputType.text,
                                 validator: (value) {
-                                  if (value == null || value.isEmpty)
+                                  if (value == null || value.isEmpty) {
                                     return 'NIK tidak boleh kosong';
+                                  }
                                   return null;
                                 },
                               ),
@@ -182,8 +185,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                   ),
                                 ),
                                 validator: (value) {
-                                  if (value == null || value.isEmpty)
+                                  if (value == null || value.isEmpty) {
                                     return 'Password tidak boleh kosong';
+                                  }
                                   return null;
                                 },
                               ),

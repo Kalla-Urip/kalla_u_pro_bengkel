@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:kalla_u_pro_bengkel/core/error/failures.dart';
 import 'package:kalla_u_pro_bengkel/core/services/auth_services.dart';
 import 'package:kalla_u_pro_bengkel/core/services/fcm_service.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/data/models/login_response_model.dart';

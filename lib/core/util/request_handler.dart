@@ -10,7 +10,7 @@ class RequestHandler {
 
   Future<Either<Failure, T>> handle<T>(Future<T> Function() request) async {
     if (!await networkInfo.isConnected()) {
-      return Left(Failure(rawMessage: 'No internet connection', errorCode: ErrorCode.noInternet));
+      return const Left(Failure(rawMessage: 'No internet connection', errorCode: ErrorCode.noInternet));
     }
     try {
       final result = await request();

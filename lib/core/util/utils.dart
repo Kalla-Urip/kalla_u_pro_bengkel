@@ -112,8 +112,8 @@ class Utils {
       SnackBar(
         content: Row(
           children: [
-            if (iconData != null) Icon(iconData, color: iconColor),
-            if (iconData != null) const SizedBox(width: 8),
+            Icon(iconData, color: iconColor),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
                 message,

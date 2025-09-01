@@ -6,8 +6,8 @@ import 'package:kalla_u_pro_bengkel/features/auth/presentation/pages/splash_scre
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/add_customer_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/main_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/service_detail_screen.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/webview_wac_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/profile/presentation/pages/profile_screen.dart';
-import 'package:kalla_u_pro_bengkel/main.dart';
 
 class AppRoutes {
   // Route names
@@ -17,6 +17,7 @@ class AppRoutes {
   static const String profile = '/profile';
   static const String addCustomer = '/add-customer';
   static const String serviceDetail = '/service-detail';
+  static const String webviewWac = '/webview-wac';
 
 
   // GoRouter configuration
@@ -51,6 +52,10 @@ class AppRoutes {
           final id = int.tryParse(state.pathParameters['id'] ?? '0') ?? 0;
           return ServiceDetailScreen(serviceId: id);
         },
+      ),
+      GoRoute(
+        path: webviewWac,
+        builder: (context, state) => const WebViewWacScreen(),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(
