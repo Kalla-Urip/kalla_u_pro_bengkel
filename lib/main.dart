@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/inapp_webview_screen.dart';
 import 'package:kalla_u_pro_bengkel/common/app_themes.dart';
 import 'package:kalla_u_pro_bengkel/di/service_locator.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
@@ -14,6 +14,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_service_
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_stall_cubit.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/bloc/get_vehicle_type_cubit.dart';
 import 'package:kalla_u_pro_bengkel/firebase_options.dart';
+import 'package:permission_handler/permission_handler.dart';
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
@@ -21,6 +22,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 }
 void main()  async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Permission.camera.request();
    await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
@@ -57,7 +59,7 @@ void main()  async {
           create: (context) => locator<GetServiceDetailCubit>(),
         ),
       ],
-      child: const MyApp(),
+  child: const MyApp(),
     ),
   );
 }
@@ -67,13 +69,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
-    return MaterialApp.router(
+    return MaterialApp(
       title: 'U Pro Bengkel',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      routerConfig: AppRoutes.router,
-      // home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const InAppWebViewScreen(url: 'https://wac.kallaurip.pro/'),
     );
   }
 }
