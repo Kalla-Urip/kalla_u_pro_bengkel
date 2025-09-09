@@ -7,6 +7,7 @@ import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/add_custome
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/main_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/service_detail_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/webview_wac_screen.dart';
+import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/inapp_webview_screen.dart';
 import 'package:kalla_u_pro_bengkel/features/profile/presentation/pages/profile_screen.dart';
 
 class AppRoutes {
@@ -55,7 +56,7 @@ class AppRoutes {
       ),
       GoRoute(
         path: webviewWac,
-        builder: (context, state) => const WebViewWacScreen(),
+        builder: (context, state) => const InAppWebViewScreen(url: 'https://wac.kallaurip.pro/'),
       ),
     ],
     errorBuilder: (context, state) => Scaffold(

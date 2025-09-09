@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:kalla_u_pro_bengkel/features/home/presentation/pages/inapp_webview_screen.dart';
+import 'package:kalla_u_pro_bengkel/common/app_routes.dart';
 import 'package:kalla_u_pro_bengkel/common/app_themes.dart';
 import 'package:kalla_u_pro_bengkel/di/service_locator.dart';
 import 'package:kalla_u_pro_bengkel/features/auth/presentation/bloc/login_cubit.dart';
@@ -69,11 +69,11 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'U Pro Bengkel',
       theme: AppTheme.lightTheme,
       debugShowCheckedModeBanner: false,
-      home: const InAppWebViewScreen(url: 'https://wac.kallaurip.pro/'),
+      routerConfig: AppRoutes.router,
     );
   }
 }
