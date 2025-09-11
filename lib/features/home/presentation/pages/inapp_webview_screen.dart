@@ -30,19 +30,13 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: AppColors.primary,
-        title: const Text(
-          'WAC AI Method',
-          style: AppTextStyles.subtitle2,
-        ),
+        title: const Text('WAC AI Method', style: AppTextStyles.subtitle2),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () => context.pop(),
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () => _controller?.reload(),
-          ),
+          IconButton(icon: const Icon(Icons.refresh), onPressed: () => _controller?.reload()),
         ],
       ),
       body: Stack(
@@ -50,31 +44,30 @@ class _InAppWebViewScreenState extends State<InAppWebViewScreen> {
           SafeArea(
             child: InAppWebView(
               initialUrlRequest: URLRequest(url: WebUri(widget.url)),
-              initialSettings:  InAppWebViewSettings(
+              initialSettings: InAppWebViewSettings(
                 javaScriptEnabled: true,
                 javaScriptCanOpenWindowsAutomatically: true,
                 allowsInlineMediaPlayback: true,
                 mediaPlaybackRequiresUserGesture: false,
-                // PENTING: tidak ada JS interception apa pun
+                mixedContentMode: MixedContentMode.MIXED_CONTENT_ALWAYS_ALLOW, // ★ izinkan http di halaman https
+                thirdPartyCookiesEnabled: true, // ★ pastikan cookie pihak ketiga diizinkan (Android)
               ),
               onWebViewCreated: (c) => _controller = c,
 
-              // Opsional debugging log JS
+              // (Opsional) bantu debug kalau masih blank: lihat error load resource di console
               // onConsoleMessage: (c, m) => debugPrint('[WV] ${m.message}'),
 
               onLoadStart: (c, u) => setState(() => _isLoading = true),
               onLoadStop: (c, u) => setState(() => _isLoading = false),
               onLoadError: (c, u, code, msg) => setState(() => _isLoading = false),
 
-              // Izinkan kamera/mic saat halaman pakai getUserMedia (opsional)
               onPermissionRequest: (c, req) async => PermissionResponse(
                 resources: req.resources,
                 action: PermissionResponseAction.GRANT,
               ),
             ),
           ),
-          if (_isLoading)
-            const Center(child: CircularProgressIndicator()),
+          if (_isLoading) const Center(child: CircularProgressIndicator()),
         ],
       ),
     );
